@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	var inChn = make(chan events.Event)
+	inChn := make(chan events.Event)
 	go func() {
 		select {
 		case todo := <-inChn:
