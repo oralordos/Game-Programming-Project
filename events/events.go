@@ -26,7 +26,7 @@ func NewEventManager() *EventManager {
 	}
 }
 
-func (e *EventManager) AddListener(listener chan<- Event, direction int) {
+func (e *EventManager) AddListener(listener chan<- Event, direction, subVal int) {
 	if direction&DirSystem == DirSystem {
 		e.systemOuts = append(e.systemOuts, listener)
 	}
@@ -35,7 +35,7 @@ func (e *EventManager) AddListener(listener chan<- Event, direction int) {
 	}
 }
 
-func (e *EventManager) RemoveListener(listener chan<- Event, direction int) {
+func (e *EventManager) RemoveListener(listener chan<- Event, direction, subVal int) {
 	if direction&DirSystem == DirSystem {
 		for i, v := range e.systemOuts {
 			if v == listener {
@@ -60,12 +60,12 @@ func (e *EventManager) SendEvent(event Event) {
 	}()
 }
 
-func AddListener(listener chan<- Event, direction int) {
-	DefaultEventManager.AddListener(listener, direction)
+func AddListener(listener chan<- Event, direction, subVal int) {
+	DefaultEventManager.AddListener(listener, direction, subVal)
 }
 
-func RemoveListener(listener chan<- Event, direction int) {
-	DefaultEventManager.RemoveListener(listener, direction)
+func RemoveListener(listener chan<- Event, direction, subVal int) {
+	DefaultEventManager.RemoveListener(listener, direction, subVal)
 }
 
 func SendEvent(event Event) {
