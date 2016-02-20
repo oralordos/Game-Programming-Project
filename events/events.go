@@ -10,43 +10,74 @@ type Event interface {
 	getSubValue() int
 }
 
+type listener struct {
+	ch        chan<- Event
+	direction int
+	subVal    int
+}
+
 type EventManager struct {
-	input      chan Event
-	systemOuts []chan<- Event
-	frontOuts  []chan<- Event
+	addList    chan *listener
+	removeList chan *listener
+	eInput     chan Event
+	systemOuts []*listener
+	frontOuts  []*listener
+	close      chan struct{}
 }
 
 var DefaultEventManager = NewEventManager()
 
 func NewEventManager() *EventManager {
-	return &EventManager{
-		input:      make(chan Event),
-		systemOuts: []chan<- Event{},
-		frontOuts:  []chan<- Event{},
+	man := &EventManager{
+		addList:    make(chan *listener),
+		removeList: make(chan *listener),
+		eInput:     make(chan Event),
+		systemOuts: []*listener{},
+		frontOuts:  []*listener{},
+		close:      make(chan struct{}),
+	}
+	go man.mainloop()
+	return man
+}
+
+func (e *EventManager) mainloop() {
+	for {
+		select {
+		case newList := <-e.addList:
+			e.add(newList)
+		case oldList := <-e.removeList:
+			e.remove(oldList)
+		case event := <-e.eInput:
+			e.event(event)
+		case _, ok := <-e.close:
+			if !ok {
+				break
+			}
+		}
 	}
 }
 
-func (e *EventManager) AddListener(listener chan<- Event, direction, subVal int) {
-	if direction&DirSystem == DirSystem {
-		e.systemOuts = append(e.systemOuts, listener)
+func (e *EventManager) add(list *listener) {
+	if list.direction&DirSystem == DirSystem {
+		e.systemOuts = append(e.systemOuts, list)
 	}
-	if direction&DirFront == DirFront {
-		e.frontOuts = append(e.systemOuts, listener)
+	if list.direction&DirFront == DirFront {
+		e.frontOuts = append(e.systemOuts, list)
 	}
 }
 
-func (e *EventManager) RemoveListener(listener chan<- Event, direction, subVal int) {
-	if direction&DirSystem == DirSystem {
+func (e *EventManager) remove(list *listener) {
+	if list.direction&DirSystem == DirSystem {
 		for i, v := range e.systemOuts {
-			if v == listener {
+			if v == list {
 				e.systemOuts = append(e.systemOuts[:i], e.systemOuts[i+1:]...)
 				break
 			}
 		}
 	}
-	if direction&DirFront == DirFront {
+	if list.direction&DirFront == DirFront {
 		for i, v := range e.frontOuts {
-			if v == listener {
+			if v == list {
 				e.frontOuts = append(e.frontOuts[:i], e.frontOuts[i+1:]...)
 				break
 			}
@@ -54,10 +85,34 @@ func (e *EventManager) RemoveListener(listener chan<- Event, direction, subVal i
 	}
 }
 
+func (e *EventManager) event(ev Event) {
+	// TODO
+}
+
+func (e *EventManager) AddListener(list chan<- Event, direction, subVal int) {
+	l := &listener{
+		ch:        list,
+		direction: direction,
+		subVal:    subVal,
+	}
+	e.addList <- l
+}
+
+func (e *EventManager) RemoveListener(list chan<- Event, direction, subVal int) {
+	l := &listener{
+		ch:        list,
+		direction: direction,
+		subVal:    subVal,
+	}
+	e.removeList <- l
+}
+
 func (e *EventManager) SendEvent(event Event) {
-	go func() {
-		e.input <- event
-	}()
+	e.eInput <- event
+}
+
+func (e *EventManager) Close() {
+	close(e.close)
 }
 
 func AddListener(listener chan<- Event, direction, subVal int) {
