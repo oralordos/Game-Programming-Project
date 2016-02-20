@@ -41,6 +41,7 @@ func NewEventManager() *EventManager {
 }
 
 func (e *EventManager) mainloop() {
+eventLoop:
 	for {
 		select {
 		case newList := <-e.addList:
@@ -51,7 +52,7 @@ func (e *EventManager) mainloop() {
 			e.event(event)
 		case _, ok := <-e.close:
 			if !ok {
-				break
+				break eventLoop
 			}
 		}
 	}
@@ -69,7 +70,7 @@ func (e *EventManager) add(list *listener) {
 func (e *EventManager) remove(list *listener) {
 	if list.direction&DirSystem == DirSystem {
 		for i, v := range e.systemOuts {
-			if v == list {
+			if v.ch == list.ch && v.direction == list.direction && v.subVal == list.subVal {
 				e.systemOuts = append(e.systemOuts[:i], e.systemOuts[i+1:]...)
 				break
 			}
@@ -77,7 +78,7 @@ func (e *EventManager) remove(list *listener) {
 	}
 	if list.direction&DirFront == DirFront {
 		for i, v := range e.frontOuts {
-			if v == list {
+			if v.ch == list.ch && v.direction == list.direction && v.subVal == list.subVal {
 				e.frontOuts = append(e.frontOuts[:i], e.frontOuts[i+1:]...)
 				break
 			}
@@ -86,7 +87,20 @@ func (e *EventManager) remove(list *listener) {
 }
 
 func (e *EventManager) event(ev Event) {
-	// TODO
+	dir := ev.getDirection()
+	var list []*listener
+	if dir&DirFront == DirFront {
+		list = e.frontOuts
+	} else if dir&DirSystem == DirSystem {
+		list = e.systemOuts
+	}
+	for _, v := range list {
+		if v.subVal == ev.getSubValue() {
+			go func(ch chan<- Event) {
+				ch <- ev
+			}(v.ch)
+		}
+	}
 }
 
 func (e *EventManager) AddListener(list chan<- Event, direction, subVal int) {
