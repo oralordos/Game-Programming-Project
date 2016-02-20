@@ -7,6 +7,13 @@ import (
 	"github.com/Oralordos/Game-Programming-Project/events"
 )
 
+type level struct {
+}
+
+type unit struct {
+	unitId int
+}
+
 const frameDelta = 33 * time.Millisecond
 
 func init() {
