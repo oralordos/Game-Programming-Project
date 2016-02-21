@@ -1,19 +1,21 @@
 package events
 
+import "github.com/deckarep/golang-set"
+
 const (
 	DirSystem = 1
 	DirFront  = 2
 )
 
 type Event interface {
-	getDirection() int
-	getSubValue() int
+	GetDirection() int
+	GetSubValue() mapset.Set
 }
 
 type listener struct {
 	ch        chan<- Event
 	direction int
-	subVal    int
+	subVal    mapset.Set
 }
 
 type EventManager struct {
@@ -70,7 +72,7 @@ func (e *EventManager) add(list *listener) {
 func (e *EventManager) remove(list *listener) {
 	if list.direction&DirSystem == DirSystem {
 		for i, v := range e.systemOuts {
-			if v.ch == list.ch && v.direction == list.direction && v.subVal == list.subVal {
+			if v.ch == list.ch && v.direction == list.direction && v.subVal.Equal(list.subVal) {
 				e.systemOuts = append(e.systemOuts[:i], e.systemOuts[i+1:]...)
 				break
 			}
@@ -78,7 +80,7 @@ func (e *EventManager) remove(list *listener) {
 	}
 	if list.direction&DirFront == DirFront {
 		for i, v := range e.frontOuts {
-			if v.ch == list.ch && v.direction == list.direction && v.subVal == list.subVal {
+			if v.ch == list.ch && v.direction == list.direction && v.subVal.Equal(list.subVal) {
 				e.frontOuts = append(e.frontOuts[:i], e.frontOuts[i+1:]...)
 				break
 			}
@@ -87,7 +89,7 @@ func (e *EventManager) remove(list *listener) {
 }
 
 func (e *EventManager) event(ev Event) {
-	dir := ev.getDirection()
+	dir := ev.GetDirection()
 	var list []*listener
 	if dir&DirFront == DirFront {
 		list = e.frontOuts
@@ -95,7 +97,7 @@ func (e *EventManager) event(ev Event) {
 		list = e.systemOuts
 	}
 	for _, v := range list {
-		if v.subVal == ev.getSubValue() {
+		if v.subVal.Union(ev.GetSubValue()).Cardinality() != 0 {
 			go func(ch chan<- Event) {
 				ch <- ev
 			}(v.ch)
@@ -103,37 +105,47 @@ func (e *EventManager) event(ev Event) {
 	}
 }
 
-func (e *EventManager) AddListener(list chan<- Event, direction, subVal int) {
+func (e *EventManager) AddListener(list chan<- Event, direction int, subVal []int) {
+	s := mapset.NewThreadUnsafeSet()
+	for _, v := range subVal {
+		s.Add(v)
+	}
 	l := &listener{
 		ch:        list,
 		direction: direction,
-		subVal:    subVal,
+		subVal:    s,
 	}
 	e.addList <- l
 }
 
-func (e *EventManager) RemoveListener(list chan<- Event, direction, subVal int) {
+func (e *EventManager) RemoveListener(list chan<- Event, direction int, subVal []int) {
+	s := mapset.NewThreadUnsafeSet()
+	for _, v := range subVal {
+		s.Add(v)
+	}
 	l := &listener{
 		ch:        list,
 		direction: direction,
-		subVal:    subVal,
+		subVal:    s,
 	}
 	e.removeList <- l
 }
 
 func (e *EventManager) SendEvent(event Event) {
-	e.eInput <- event
+	go func() {
+		e.eInput <- event
+	}()
 }
 
 func (e *EventManager) Close() {
 	close(e.close)
 }
 
-func AddListener(listener chan<- Event, direction, subVal int) {
+func AddListener(listener chan<- Event, direction int, subVal []int) {
 	DefaultEventManager.AddListener(listener, direction, subVal)
 }
 
-func RemoveListener(listener chan<- Event, direction, subVal int) {
+func RemoveListener(listener chan<- Event, direction int, subVal []int) {
 	DefaultEventManager.RemoveListener(listener, direction, subVal)
 }
 
