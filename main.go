@@ -6,19 +6,16 @@ import (
 
 	"github.com/Oralordos/Game-Programming-Project/events"
 	"github.com/Oralordos/Game-Programming-Project/graphics"
-	"github.com/deckarep/golang-set"
 )
 
 type testEvent string
 
-func (_ *testEvent) GetDirection() int {
+func (t *testEvent) GetDirection() int {
 	return events.DirSystem
 }
 
-func (_ *testEvent) GetSubValue() mapset.Set {
-	s := mapset.NewThreadUnsafeSet()
-	s.Add(1)
-	return s
+func (t *testEvent) GetSubValue() int {
+	return 1
 }
 
 func (t testEvent) String() string {
@@ -38,7 +35,7 @@ func main() {
 	defer win.Destroy()
 
 	ch := make(chan events.Event)
-	events.AddListener(ch, events.DirSystem, []int{1, 2, 3, 4})
+	events.AddListener(ch, events.DirSystem, 0)
 	e := testEvent("Testing Events!")
 	events.SendEvent(&e)
 
