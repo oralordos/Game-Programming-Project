@@ -25,7 +25,7 @@ type Window struct {
 func CreateWindow(width, height int, title string) (*Window, error) {
 	g := Window{}
 	var err error
-	g.win, err = sdl.CreateWindow(title, sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED, width, height, sdl.WINDOW_INPUT_GRABBED)
+	g.win, err = sdl.CreateWindow(title, sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED, width, height, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -41,6 +41,10 @@ func (g *Window) Destroy() {
 func (g *Window) Clear() error {
 	g.rend.SetDrawColor(0, 0, 0, 255)
 	return g.rend.Clear()
+}
+
+func (g *Window) Draw(d Drawable) error {
+	return d.Draw(g.rend)
 }
 
 func (g *Window) Update() {
