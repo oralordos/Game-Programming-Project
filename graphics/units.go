@@ -24,8 +24,8 @@ func NewUnit(x, y float64, w, h int32, id int) *Unit {
 	return u
 }
 
-func (u *Unit) GetDrawChannel() <-chan Drawable {
-	return u.drawCh
+func (u *Unit) GetDrawable() Drawable {
+	return <-u.drawCh
 }
 
 func (u *Unit) mainloop() {

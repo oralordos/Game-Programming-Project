@@ -20,10 +20,11 @@ func Quit() {
 type Window struct {
 	win  *sdl.Window
 	rend *sdl.Renderer
+	draw UpdatableDrawable
 }
 
-func CreateWindow(width, height int, title string) (*Window, error) {
-	g := Window{}
+func CreateWindow(width, height int, title string, draw UpdatableDrawable) (*Window, error) {
+	g := Window{draw: draw}
 	var err error
 	g.win, err = sdl.CreateWindow(title, sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED, width, height, 0)
 	if err != nil {
@@ -47,6 +48,18 @@ func (g *Window) Draw(d Drawable) error {
 	return d.Draw(g.rend)
 }
 
-func (g *Window) Update() {
+func (g *Window) Update() error {
+	draw := g.draw.GetDrawable()
+	if err := g.Clear(); err != nil {
+		return err
+	}
+	if err := g.Draw(draw); err != nil {
+		return err
+	}
+	g.Present()
+	return nil
+}
+
+func (g *Window) Present() {
 	g.rend.Present()
 }
