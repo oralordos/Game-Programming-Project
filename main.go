@@ -1,26 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
 	"github.com/Oralordos/Game-Programming-Project/graphics"
 )
-
-type testEvent string
-
-func (t *testEvent) GetDirection() int {
-	return events.DirSystem
-}
-
-func (t *testEvent) GetSubValue() int {
-	return 1
-}
-
-func (t testEvent) String() string {
-	return string(t)
-}
 
 func main() {
 	err := graphics.Init()
@@ -34,14 +19,36 @@ func main() {
 	}
 	defer win.Destroy()
 
-	ch := make(chan events.Event)
-	events.AddListener(ch, events.DirSystem, 0)
-	e := testEvent("Testing Events!")
+	u := graphics.NewUnit(30, 30, 32, 32, 1)
+	defer u.Close()
+
+	e := events.UnitMoved{
+		ID:   1,
+		NewX: 50,
+		NewY: 50,
+	}
+
+	err = win.Clear()
+	if err != nil {
+		panic(err)
+	}
+	err = u.Draw(win)
+	if err != nil {
+		panic(err)
+	}
+	win.Update()
+
+	time.Sleep(2500 * time.Millisecond)
 	events.SendEvent(&e)
-
-	val := <-ch
-
-	fmt.Println(val)
-
-	time.Sleep(5 * time.Second)
+	time.Sleep(100 * time.Millisecond)
+	err = win.Clear()
+	if err != nil {
+		panic(err)
+	}
+	err = u.Draw(win)
+	if err != nil {
+		panic(err)
+	}
+	win.Update()
+	time.Sleep(2500 * time.Millisecond)
 }

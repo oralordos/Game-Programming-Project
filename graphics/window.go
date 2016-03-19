@@ -37,3 +37,12 @@ func (g *Window) Destroy() {
 	g.rend.Destroy()
 	g.win.Destroy()
 }
+
+func (g *Window) Clear() error {
+	g.rend.SetDrawColor(0, 0, 0, 255)
+	return g.rend.Clear()
+}
+
+func (g *Window) Update() {
+	g.rend.Present()
+}
