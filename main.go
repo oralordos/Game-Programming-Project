@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
@@ -10,7 +11,7 @@ import (
 func main() {
 	err := graphics.Init()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	defer graphics.Quit()
 
@@ -19,7 +20,7 @@ func main() {
 
 	win, err := graphics.CreateWindow(800, 600, "Test", u)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	defer win.Destroy()
 
@@ -31,7 +32,7 @@ func main() {
 
 	err = win.Update()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	time.Sleep(2000 * time.Millisecond)
@@ -40,7 +41,7 @@ func main() {
 
 	err = win.Update()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	time.Sleep(2500 * time.Millisecond)
 }
