@@ -45,6 +45,7 @@ loop:
 			}
 		}
 	}
+	events.RemoveListener(u.eventCh, events.DirFront, u.id)
 }
 
 func (u *Unit) getDraw() Drawable {
