@@ -24,10 +24,16 @@ func main() {
 	}
 	defer win.Destroy()
 
-	e := events.UnitMoved{
-		ID:   1,
-		NewX: 50,
-		NewY: 50,
+	e := events.InputUpdate{
+		ID: 1,
+		X:  0.707,
+		Y:  0.707,
+	}
+
+	e2 := events.InputUpdate{
+		ID: 1,
+		X:  0,
+		Y:  0,
 	}
 
 	err = win.Update()
@@ -35,7 +41,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	time.Sleep(2000 * time.Millisecond)
+	time.Sleep(900 * time.Millisecond)
 	events.SendEvent(&e)
 	time.Sleep(100 * time.Millisecond)
 
@@ -43,5 +49,15 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	time.Sleep(2500 * time.Millisecond)
+
+	time.Sleep(1900 * time.Millisecond)
+	events.SendEvent(&e2)
+	time.Sleep(100 * time.Millisecond)
+
+	err = win.Update()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	time.Sleep(2 * time.Second)
 }

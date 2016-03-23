@@ -12,3 +12,16 @@ func (u *UnitMoved) GetDirection() int {
 func (u *UnitMoved) GetSubValue() int {
 	return u.ID
 }
+
+type InputUpdate struct {
+	ID   int
+	X, Y float64
+}
+
+func (u *InputUpdate) GetDirection() int {
+	return DirSystem
+}
+
+func (u *InputUpdate) GetSubValue() int {
+	return u.ID
+}
