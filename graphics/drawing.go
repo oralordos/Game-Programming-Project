@@ -7,7 +7,7 @@ type UpdatableDrawable interface {
 }
 
 type Drawable interface {
-	Draw(r *sdl.Renderer) error
+	Draw(r *sdl.Renderer, offsetX, offsetY int32) error
 }
 
 type RectDrawer struct {
@@ -15,13 +15,13 @@ type RectDrawer struct {
 	r, g, b, a uint8
 }
 
-func (d *RectDrawer) Draw(r *sdl.Renderer) error {
+func (d *RectDrawer) Draw(r *sdl.Renderer, offsetX, offsetY int32) error {
 	if err := r.SetDrawColor(d.r, d.g, d.b, d.a); err != nil {
 		return err
 	}
 	rect := &sdl.Rect{
-		X: d.x,
-		Y: d.y,
+		X: d.x + offsetX,
+		Y: d.y + offsetY,
 		W: d.w,
 		H: d.h,
 	}
@@ -30,9 +30,9 @@ func (d *RectDrawer) Draw(r *sdl.Renderer) error {
 
 type CombinedDrawer []Drawable
 
-func (d CombinedDrawer) Draw(r *sdl.Renderer) error {
+func (d CombinedDrawer) Draw(r *sdl.Renderer, offsetX, offsetY int32) error {
 	for _, v := range d {
-		if err := v.Draw(r); err != nil {
+		if err := v.Draw(r, offsetX, offsetY); err != nil {
 			return err
 		}
 	}

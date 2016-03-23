@@ -45,7 +45,7 @@ func (g *Window) Clear() error {
 }
 
 func (g *Window) Draw(d Drawable) error {
-	return d.Draw(g.rend)
+	return d.Draw(g.rend, 0, 0)
 }
 
 func (g *Window) Update() error {
