@@ -56,6 +56,7 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 		for i, v := range p.units {
 			if v.GetID() == e.ID {
 				p.units = append(p.units[:i], p.units[i+1:]...)
+				break
 			}
 		}
 	}
