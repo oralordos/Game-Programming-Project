@@ -38,6 +38,7 @@ loop:
 			}
 		}
 	}
+	events.RemoveListener(p.eventCh, events.DirFront, 0)
 	for _, v := range p.units {
 		events.SendEvent(&events.DestroyUnit{ID: v.GetID()})
 	}
