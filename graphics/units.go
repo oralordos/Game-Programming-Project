@@ -33,11 +33,7 @@ loop:
 	for {
 		select {
 		case ev := <-u.eventCh:
-			switch e := ev.(type) {
-			case *events.UnitMoved:
-				u.x = e.NewX
-				u.y = e.NewY
-			}
+			u.processEvent(ev)
 		case u.drawCh <- u.getDraw():
 		case _, ok := <-u.close:
 			if !ok {
@@ -46,6 +42,14 @@ loop:
 		}
 	}
 	events.RemoveListener(u.eventCh, events.DirFront, u.id)
+}
+
+func (u *Unit) processEvent(ev events.Event) {
+	switch e := ev.(type) {
+	case *events.UnitMoved:
+		u.x = e.NewX
+		u.y = e.NewY
+	}
 }
 
 func (u *Unit) getDraw() Drawable {
