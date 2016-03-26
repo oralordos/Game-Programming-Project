@@ -69,11 +69,11 @@ func (p *PlayerFrontend) processInput() {
 		input := Input{}
 		for _, v := range p.inputs {
 			earlyExit, in := v.ProcessEvent(ev, p)
-			if earlyExit {
-				break
-			}
 			if in != nil {
 				input.Combine(in)
+			}
+			if earlyExit {
+				break
 			}
 		}
 		input.Normalize()
