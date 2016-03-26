@@ -49,7 +49,13 @@ func (u *Unit) processEvent(ev events.Event) {
 	case *events.UnitMoved:
 		u.x = e.NewX
 		u.y = e.NewY
+	case *events.DestroyUnit:
+		u.Destroy()
 	}
+}
+
+func (u *Unit) GetID() int {
+	return u.id
 }
 
 func (u *Unit) getDraw() Drawable {

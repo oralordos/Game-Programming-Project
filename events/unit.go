@@ -25,3 +25,29 @@ func (u *InputUpdate) GetDirection() int {
 func (u *InputUpdate) GetSubValue() int {
 	return u.ID
 }
+
+type CreateUnit struct {
+	ID   int
+	X, Y float64
+	W, H int32
+}
+
+func (u *CreateUnit) GetDirection() int {
+	return DirFront | DirSystem
+}
+
+func (u *CreateUnit) GetSubValue() int {
+	return 0
+}
+
+type DestroyUnit struct {
+	ID int
+}
+
+func (u *DestroyUnit) GetDirection() int {
+	return DirFront | DirSystem
+}
+
+func (u *DestroyUnit) GetSubValue() int {
+	return u.ID
+}

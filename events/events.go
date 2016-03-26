@@ -88,11 +88,12 @@ func (e *EventManager) remove(list *listener) {
 
 func (e *EventManager) event(ev Event) {
 	dir := ev.GetDirection()
-	var list []*listener
+	list := []*listener{}
 	if dir&DirFront == DirFront {
-		list = e.frontOuts
-	} else if dir&DirSystem == DirSystem {
-		list = e.systemOuts
+		list = append(list, e.frontOuts...)
+	}
+	if dir&DirSystem == DirSystem {
+		list = append(list, e.systemOuts...)
 	}
 	for _, v := range list {
 		if v.subVal == 0 || v.subVal == ev.GetSubValue() {

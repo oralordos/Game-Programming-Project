@@ -15,10 +15,22 @@ func main() {
 	}
 	defer graphics.Quit()
 
-	u := graphics.NewUnit(30, 30, 32, 32, 1)
-	defer u.Destroy()
+	create := &events.CreateUnit{
+		ID: 1,
+		X:  30,
+		Y:  30,
+		W:  32,
+		H:  32,
+	}
 
-	win, err := graphics.CreateWindow(800, 600, "Test", u)
+	frontend := NewPlayerFrontend()
+	defer frontend.Destroy()
+
+	events.SendEvent(create)
+	time.Sleep(20 * time.Millisecond)
+	frontend.AttachUnit(1)
+
+	win, err := graphics.CreateWindow(800, 600, "Test", frontend)
 	if err != nil {
 		log.Fatalln(err)
 	}
