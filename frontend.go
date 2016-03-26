@@ -1,37 +1,45 @@
 package main
 
 import (
+	"log"
+	"time"
+
 	"github.com/Oralordos/Game-Programming-Project/events"
 	"github.com/Oralordos/Game-Programming-Project/graphics"
 )
 
 type PlayerFrontend struct {
 	player  *graphics.Unit
+	window  *graphics.Window
 	units   []*graphics.Unit
 	eventCh chan events.Event
-	drawCh  chan graphics.Drawable
 	close   chan struct{}
 }
 
-func NewPlayerFrontend() *PlayerFrontend {
+func NewPlayerFrontend(win *graphics.Window) *PlayerFrontend {
 	p := PlayerFrontend{
+		window:  win,
 		units:   []*graphics.Unit{},
 		eventCh: make(chan events.Event),
-		drawCh:  make(chan graphics.Drawable),
 		close:   make(chan struct{}),
 	}
 	events.AddListener(p.eventCh, events.DirFront, 0)
-	go p.mainloop()
 	return &p
 }
 
-func (p *PlayerFrontend) mainloop() {
+func (p *PlayerFrontend) Mainloop() {
+	nextUpdate := time.After(16666 * time.Microsecond)
 loop:
 	for {
 		select {
 		case ev := <-p.eventCh:
 			p.processEvent(ev)
-		case p.drawCh <- p.getDraw():
+		case <-nextUpdate:
+			nextUpdate = time.After(16666 * time.Microsecond)
+			// TODO Check input
+			if err := p.window.Update(p.getDraw()); err != nil {
+				log.Fatalln(err)
+			}
 		case _, ok := <-p.close:
 			if !ok {
 				break loop
@@ -77,8 +85,4 @@ func (p *PlayerFrontend) getDraw() graphics.Drawable {
 		draw = append(draw, v.GetDrawable())
 	}
 	return &draw
-}
-
-func (p *PlayerFrontend) GetDrawable() graphics.Drawable {
-	return <-p.drawCh
 }

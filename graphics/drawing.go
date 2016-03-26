@@ -2,10 +2,6 @@ package graphics
 
 import "github.com/veandco/go-sdl2/sdl"
 
-type UpdatableDrawable interface {
-	GetDrawable() Drawable
-}
-
 type Drawable interface {
 	Draw(r *sdl.Renderer, offsetX, offsetY int32) error
 }

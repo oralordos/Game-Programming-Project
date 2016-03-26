@@ -23,53 +23,38 @@ func main() {
 		H:  32,
 	}
 
-	frontend := NewPlayerFrontend()
-	defer frontend.Destroy()
-
-	events.SendEvent(create)
-	time.Sleep(20 * time.Millisecond)
-	frontend.AttachUnit(1)
-
-	win, err := graphics.CreateWindow(800, 600, "Test", frontend)
+	win, err := graphics.CreateWindow(800, 600, "Test")
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer win.Destroy()
 
-	e := events.InputUpdate{
-		ID: 1,
-		X:  0.707,
-		Y:  0.707,
-	}
+	frontend := NewPlayerFrontend(win)
 
-	e2 := events.InputUpdate{
-		ID: 1,
-		X:  0,
-		Y:  0,
-	}
+	events.SendEvent(create)
+	time.Sleep(20 * time.Millisecond)
+	frontend.AttachUnit(1)
 
-	err = win.Update()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	go func() {
+		e := events.InputUpdate{
+			ID: 1,
+			X:  0.707,
+			Y:  0.707,
+		}
 
-	time.Sleep(900 * time.Millisecond)
-	events.SendEvent(&e)
-	time.Sleep(100 * time.Millisecond)
+		e2 := events.InputUpdate{
+			ID: 1,
+			X:  0,
+			Y:  0,
+		}
 
-	err = win.Update()
-	if err != nil {
-		log.Fatalln(err)
-	}
+		time.Sleep(time.Second)
+		events.SendEvent(&e)
+		time.Sleep(2 * time.Second)
+		events.SendEvent(&e2)
+		time.Sleep(2 * time.Second)
+		frontend.Destroy()
+	}()
 
-	time.Sleep(1900 * time.Millisecond)
-	events.SendEvent(&e2)
-	time.Sleep(100 * time.Millisecond)
-
-	err = win.Update()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	time.Sleep(2 * time.Second)
+	frontend.Mainloop()
 }
