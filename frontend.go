@@ -13,6 +13,7 @@ type PlayerFrontend struct {
 	player  *graphics.Unit
 	window  *graphics.Window
 	units   []*graphics.Unit
+	level   *graphics.Tilemap
 	inputs  []InputSystem
 	eventCh chan events.Event
 	close   chan struct{}
@@ -28,6 +29,10 @@ func NewPlayerFrontend(win *graphics.Window) *PlayerFrontend {
 	}
 	events.AddListener(p.eventCh, events.DirFront, 0)
 	return &p
+}
+
+func (p *PlayerFrontend) SetLevel(level *graphics.Tilemap) {
+	p.level = level
 }
 
 func (p *PlayerFrontend) Mainloop() {
@@ -112,7 +117,10 @@ func (p *PlayerFrontend) AttachUnit(id int) {
 }
 
 func (p *PlayerFrontend) getDraw() graphics.Drawable {
-	draw := make(graphics.CombinedDrawer, 0, len(p.units))
+	draw := make(graphics.CombinedDrawer, 0, len(p.units)+1)
+	if p.level != nil {
+		draw = append(draw, p.level.GetDrawable())
+	}
 	for _, v := range p.units {
 		draw = append(draw, v.GetDrawable())
 	}
