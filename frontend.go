@@ -68,7 +68,7 @@ func (p *PlayerFrontend) processInput() {
 	for ev := sdl.PollEvent(); ev != nil; ev = sdl.PollEvent() {
 		input := Input{}
 		for _, v := range p.inputs {
-			earlyExit, in := v.ProcessEvent(ev)
+			earlyExit, in := v.ProcessEvent(ev, p)
 			if earlyExit {
 				break
 			}

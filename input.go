@@ -22,13 +22,14 @@ func (i *Input) Combine(other *Input) {
 }
 
 type InputSystem interface {
-	ProcessEvent(sdl.Event) (bool, *Input)
+	ProcessEvent(sdl.Event, *PlayerFrontend) (bool, *Input)
 }
 
 type ExitInput struct{}
 
-func (e ExitInput) ProcessEvent(ev sdl.Event) (bool, *Input) {
-	if _, ok := ev.(sdl.QuitEvent); ok {
+func (e ExitInput) ProcessEvent(ev sdl.Event, front *PlayerFrontend) (bool, *Input) {
+	if _, ok := ev.(*sdl.QuitEvent); ok {
+		front.Destroy()
 		return true, nil
 	}
 	return false, nil
@@ -39,7 +40,7 @@ type KeyboardInput struct {
 	a, d, w, s            bool
 }
 
-func (k *KeyboardInput) ProcessEvent(ev sdl.Event) (bool, *Input) {
+func (k *KeyboardInput) ProcessEvent(ev sdl.Event, front *PlayerFrontend) (bool, *Input) {
 	switch e := ev.(type) {
 	case *sdl.KeyDownEvent:
 		if e.Repeat == 0 {
