@@ -35,26 +35,5 @@ func main() {
 	time.Sleep(20 * time.Millisecond)
 	frontend.AttachUnit(1)
 
-	go func() {
-		e := events.InputUpdate{
-			ID: 1,
-			X:  0.707,
-			Y:  0.707,
-		}
-
-		e2 := events.InputUpdate{
-			ID: 1,
-			X:  0,
-			Y:  0,
-		}
-
-		time.Sleep(time.Second)
-		events.SendEvent(&e)
-		time.Sleep(2 * time.Second)
-		events.SendEvent(&e2)
-		time.Sleep(2 * time.Second)
-		frontend.Destroy()
-	}()
-
 	frontend.Mainloop()
 }

@@ -25,6 +25,15 @@ type InputSystem interface {
 	ProcessEvent(sdl.Event) (bool, *Input)
 }
 
+type ExitInput struct{}
+
+func (e ExitInput) ProcessEvent(ev sdl.Event) (bool, *Input) {
+	if _, ok := ev.(sdl.QuitEvent); ok {
+		return true, nil
+	}
+	return false, nil
+}
+
 type KeyboardInput struct {
 	left, right, up, down bool
 	a, d, w, s            bool
