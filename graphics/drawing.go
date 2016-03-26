@@ -38,3 +38,13 @@ func (d CombinedDrawer) Draw(r *sdl.Renderer, offsetX, offsetY int32) error {
 	}
 	return nil
 }
+
+type OffsetDrawer struct {
+	draw             Drawable
+	offsetX, offsetY int32
+}
+
+func (d *OffsetDrawer) Draw(r *sdl.Renderer, offsetX, offsetY int32) error {
+	d.draw.Draw(r, offsetX+d.offsetX, offsetY+d.offsetY)
+	return nil
+}
