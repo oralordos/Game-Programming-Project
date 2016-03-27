@@ -1,29 +1,24 @@
 package graphics
 
 type Tile struct {
-	r, g, b, a uint8
+	img Image
 }
 
-func NewTile(r, g, b, a uint8) Tile {
+func NewTile(w, h int32, r, g, b, a uint8) Tile {
 	return Tile{
-		r: r,
-		g: g,
-		b: b,
-		a: a,
+		img: Image{
+			w: w,
+			h: h,
+			r: r,
+			g: g,
+			b: b,
+			a: a,
+		},
 	}
 }
 
-func (t *Tile) GetDrawable(x, y, w, h int32) Drawable {
-	return &RectDrawer{
-		x: x * w,
-		y: y * h,
-		w: w,
-		h: h,
-		r: t.r,
-		g: t.g,
-		b: t.b,
-		a: t.a,
-	}
+func (t *Tile) GetDrawable(x, y int32) Drawable {
+	return t.img.GetDrawable(x, y)
 }
 
 type Tilemap struct {
@@ -41,9 +36,9 @@ func NewTilemap(level [][]Tile, tileWidth, tileHeight int32) *Tilemap {
 
 func (t *Tilemap) GetDrawable() Drawable {
 	draw := CombinedDrawer{}
-	for x, row := range t.level {
-		for y, tile := range row {
-			draw = append(draw, tile.GetDrawable(int32(x), int32(y), t.tileWidth, t.tileHeight))
+	for y, row := range t.level {
+		for x, tile := range row {
+			draw = append(draw, tile.GetDrawable(int32(x)*t.tileWidth, int32(y)*t.tileHeight))
 		}
 	}
 	return draw

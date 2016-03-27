@@ -104,6 +104,21 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 				break
 			}
 		}
+	case *events.ChangeLevel:
+		tiles := [][]graphics.Tile{}
+		for y, row := range e.Images {
+			tiles = append(tiles, []graphics.Tile{})
+			for _, img := range row {
+				var newTile graphics.Tile
+				if img == 0 {
+					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
+				} else {
+					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
+				}
+				tiles[y] = append(tiles[y], newTile)
+			}
+		}
+		p.level = graphics.NewTilemap(tiles, e.TileWidth, e.TileHeight)
 	}
 }
 
