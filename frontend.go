@@ -10,7 +10,7 @@ import (
 )
 
 type PlayerFrontend struct {
-	player  *graphics.Unit
+	player  int
 	window  *graphics.Window
 	units   []*graphics.Unit
 	level   *graphics.Tilemap
@@ -82,11 +82,12 @@ func (p *PlayerFrontend) processInput() {
 }
 
 func (p *PlayerFrontend) sendInput(in Input) {
-	if p.player == nil {
+	player := p.GetUnit(p.player)
+	if player == nil {
 		return
 	}
 	e := events.InputUpdate{
-		ID: p.player.GetID(),
+		ID: p.player,
 		X:  in.X,
 		Y:  in.Y,
 	}
@@ -123,12 +124,16 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 }
 
 func (p *PlayerFrontend) AttachUnit(id int) {
+	p.player = id
+}
+
+func (p *PlayerFrontend) GetUnit(id int) *graphics.Unit {
 	for _, v := range p.units {
 		if v.GetID() == id {
-			p.player = v
-			break
+			return v
 		}
 	}
+	return nil
 }
 
 func (p *PlayerFrontend) getDraw() graphics.Drawable {
