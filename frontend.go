@@ -43,7 +43,7 @@ loop:
 		case ev := <-p.eventCh:
 			p.processEvent(ev)
 		case <-nextUpdate:
-			nextUpdate = time.After(16666 * time.Microsecond)
+			nextUpdate = time.After(time.Second / 60)
 			p.processInput()
 			if err := p.window.Update(p.getDraw()); err != nil {
 				log.Fatalln(err)
