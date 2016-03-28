@@ -11,6 +11,9 @@ type Input struct {
 }
 
 func (i *Input) Normalize() {
+	if i.X == 0 && i.Y == 0 {
+		return
+	}
 	length := math.Sqrt(i.X*i.X + i.Y*i.Y)
 	i.X /= length
 	i.Y /= length
