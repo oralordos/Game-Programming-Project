@@ -7,27 +7,46 @@ import (
 	"github.com/Oralordos/Game-Programming-Project/events"
 )
 
-type level struct {
+//BackEnd is struct for backend mechanics and info
+type BackEnd struct {
+	unitInfo []*unit
+	eventCh  chan events.Event
 }
 
 const frameDelta = 33 * time.Millisecond
 
 func init() {
-	go backend()
+	go backendLoop() //potentual problem here
 }
 
-func backend() {
+func backendLoop() {
+	b := &BackEnd{}
+	b.unitInfo = []*unit{}
 	inChn := make(chan events.Event)
-	// eta := time.Now()
-	eta := time.After(frameDelta)
+	events.AddListener(inChn, events.DirSystem, 0)
 	for {
+		ev := <-inChn
+		fmt.Printf("%T\n", ev)
 		select {
 		case todo := <-inChn:
-			fmt.Println("Something")
-			fmt.Println(todo)
-		case <-eta:
-			fmt.Println("timeout")
-			eta = time.After(frameDelta)
+			b.processEvent(todo) //potentual problem here
 		}
 	}
 }
+
+func (b *BackEnd) processEvent(ev events.Event) {
+	switch e := ev.(type) {
+	case *events.CreateUnit:
+		b.unitInfo = append(b.unitInfo, NewUnit(e.X, e.Y, PlayerT, e.ID))
+	}
+}
+
+// switch e := todo.(type) {
+// case *events.UnitMoved:
+// 	ev := events.UnitMoved{
+// 		ID: 1,
+// 		X:  0,
+// 		Y:  -1,
+// 	}
+// 	events.SendEvent(ev)
+// }
