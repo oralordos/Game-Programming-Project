@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
@@ -27,7 +26,6 @@ func backendLoop() {
 	for {
 		select {
 		case todo := <-inChn:
-			fmt.Printf("%T\n", todo)
 			b.processEvent(todo)
 		}
 	}

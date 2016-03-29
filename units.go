@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"math"
 	"time"
 
@@ -43,7 +42,6 @@ func NewUnit(x, y float64, typ *unitType, id int) *unit {
 		make(chan events.Event),
 		make(chan struct{}),
 	}
-	fmt.Println(u)
 	events.AddListener(u.eventCh, events.DirSystem, u.unitID)
 	go u.unitloop()
 	return u
@@ -75,15 +73,12 @@ func (u *unit) updateUnit() {
 	u.xV += u.xAcl + (-u.xV * 0.8)
 	u.yV += u.yAcl + (-u.yV * 0.8)
 	u.x = math.Max(0, math.Min(800, u.x))
-	fmt.Printf("%f\n", u.x)
 	u.y = math.Max(0, math.Min(600, u.y))
-	fmt.Printf("%f\n", u.y)
 	e := events.UnitMoved{
-		u.unitID,
-		u.x,
-		u.y,
+		ID:   u.unitID,
+		NewX: u.x,
+		NewY: u.y,
 	}
-	fmt.Println(e)
 	events.SendEvent(&e)
 }
 
