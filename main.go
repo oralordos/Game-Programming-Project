@@ -33,6 +33,13 @@ func main() {
 			W:  32,
 			H:  32,
 		}
+		create2 := &events.CreateUnit{
+			ID: 2,
+			X:  105,
+			Y:  105,
+			W:  32,
+			H:  32,
+		}
 
 		tiles := [][]int{}
 		collide := [][]bool{}
@@ -54,7 +61,7 @@ func main() {
 			TileWidth:  32,
 			TileHeight: 32,
 			CollideMap: collide,
-			Units:      []events.Event{create},
+			Units:      []events.Event{create, create2},
 		}
 
 		go StartNetworkListener()
@@ -63,7 +70,7 @@ func main() {
 		frontend.AttachUnit(1)
 	} else {
 		NewNetworkBackend(os.Args[1])
-		frontend.AttachUnit(1)
+		frontend.AttachUnit(2)
 	}
 	frontend.Mainloop()
 }
