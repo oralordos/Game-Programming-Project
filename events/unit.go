@@ -13,6 +13,34 @@ func (u *UnitMoved) GetSubValue() int {
 	return u.ID
 }
 
+func isUnitMoved(items []string) bool {
+	return isMatch(items, []string{"ID", "NewX", "NewY"})
+}
+
+func getUnitMoved(data map[string]interface{}) Event {
+	e := UnitMoved{}
+
+	id, ok := data["ID"].(float64)
+	if !ok {
+		return nil
+	}
+	e.ID = int(id + 0.5)
+
+	newx, ok := data["NewX"].(float64)
+	if !ok {
+		return nil
+	}
+	e.NewX = newx
+
+	newy, ok := data["NewY"].(float64)
+	if !ok {
+		return nil
+	}
+	e.NewY = newy
+
+	return &e
+}
+
 type InputUpdate struct {
 	ID   int
 	X, Y float64
@@ -24,6 +52,34 @@ func (u *InputUpdate) GetDirection() int {
 
 func (u *InputUpdate) GetSubValue() int {
 	return u.ID
+}
+
+func isInputUpdate(items []string) bool {
+	return isMatch(items, []string{"ID", "X", "Y"})
+}
+
+func getInputUpdate(data map[string]interface{}) Event {
+	e := InputUpdate{}
+
+	id, ok := data["ID"].(float64)
+	if !ok {
+		return nil
+	}
+	e.ID = int(id + 0.5)
+
+	x, ok := data["X"].(float64)
+	if !ok {
+		return nil
+	}
+	e.X = x
+
+	y, ok := data["Y"].(float64)
+	if !ok {
+		return nil
+	}
+	e.Y = y
+
+	return &e
 }
 
 type CreateUnit struct {
@@ -40,6 +96,46 @@ func (u *CreateUnit) GetSubValue() int {
 	return 0
 }
 
+func isCreateUnit(items []string) bool {
+	return isMatch(items, []string{"ID", "X", "Y", "W", "H"})
+}
+
+func getCreateUnit(data map[string]interface{}) Event {
+	e := CreateUnit{}
+
+	id, ok := data["ID"].(float64)
+	if !ok {
+		return nil
+	}
+	e.ID = int(id + 0.5)
+
+	x, ok := data["X"].(float64)
+	if !ok {
+		return nil
+	}
+	e.X = x
+
+	y, ok := data["Y"].(float64)
+	if !ok {
+		return nil
+	}
+	e.Y = y
+
+	w, ok := data["W"].(float64)
+	if !ok {
+		return nil
+	}
+	e.W = int32(w + 0.5)
+
+	h, ok := data["H"].(float64)
+	if !ok {
+		return nil
+	}
+	e.H = int32(h + 0.5)
+
+	return &e
+}
+
 type DestroyUnit struct {
 	ID int
 }
@@ -50,4 +146,20 @@ func (u *DestroyUnit) GetDirection() int {
 
 func (u *DestroyUnit) GetSubValue() int {
 	return u.ID
+}
+
+func isDestroyUnit(items []string) bool {
+	return isMatch(items, []string{"ID"})
+}
+
+func getDestroyUnit(data map[string]interface{}) Event {
+	e := DestroyUnit{}
+
+	id, ok := data["ID"].(float64)
+	if !ok {
+		return nil
+	}
+	e.ID = int(id + 0.5)
+
+	return &e
 }
