@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
 	"github.com/Oralordos/Game-Programming-Project/graphics"
@@ -52,15 +53,16 @@ func main() {
 			TileWidth:  32,
 			TileHeight: 32,
 			CollideMap: collide,
+			Units:      []events.Event{create},
 		}
 
 		go StartNetworkListener()
+		time.Sleep(10 * time.Millisecond)
 		events.SendEvent(change)
-		events.SendEvent(create)
 		frontend.AttachUnit(1)
 	} else {
 		NewNetworkBackend(os.Args[1])
-		frontend.AttachUnit(2)
+		frontend.AttachUnit(1)
 	}
 	frontend.Mainloop()
 }

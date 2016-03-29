@@ -9,8 +9,10 @@ import (
 	"github.com/nu7hatch/gouuid"
 )
 
+const port = ":10328"
+
 func StartNetworkListener() {
-	ln, err := net.Listen("tcp", ":10328")
+	ln, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -44,6 +46,7 @@ func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 	events.AddListener(n.eventCh, events.DirFront, 0)
 	go n.readloop()
 	go n.mainloop()
+	events.SendEvent(events.ReloadLevel{})
 	return &n
 }
 
@@ -58,9 +61,9 @@ func (n *NetworkFrontend) readloop() {
 		ev := events.DecodeJSON(data)
 		if ev == nil {
 			log.Println("Unable to parse event")
+			continue
 		}
-		log.Printf("%T\n", ev)
-		// events.SendEvent(ev)
+		events.SendEvent(ev)
 	}
 }
 
@@ -88,6 +91,11 @@ func (n *NetworkFrontend) handleEvent(ev events.Event) {
 	if err != nil {
 		log.Println(err)
 	}
+	if ch, ok := ev.(*events.ChangeLevel); ok {
+		for _, unit := range ch.Units {
+			n.handleEvent(unit)
+		}
+	}
 }
 
 type NetworkBackend struct {
@@ -101,7 +109,7 @@ func NewNetworkBackend(address string) *NetworkBackend {
 		eventCh: make(chan events.Event),
 		close:   make(chan struct{}),
 	}
-	conn, err := net.Dial("tcp", address)
+	conn, err := net.Dial("tcp", address+port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -123,9 +131,9 @@ func (n *NetworkBackend) readloop() {
 		ev := events.DecodeJSON(data)
 		if ev == nil {
 			log.Println("Unable to parse event")
+			continue
 		}
-		log.Printf("%T\n", ev)
-		// events.SendEvent(ev)
+		events.SendEvent(ev)
 	}
 }
 
@@ -145,6 +153,14 @@ loop:
 }
 
 func (n *NetworkBackend) handleEvent(ev events.Event) {
+	switch ev.(type) {
+	case events.ReloadLevel:
+		return
+	case *events.ChangeLevel:
+		return
+	case *events.CreateUnit:
+		return
+	}
 	err := json.NewEncoder(n.conn).Encode(ev)
 	if err != nil {
 		log.Println(err)

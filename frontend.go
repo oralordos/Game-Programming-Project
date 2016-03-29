@@ -6,12 +6,14 @@ import (
 
 	"github.com/Oralordos/Game-Programming-Project/events"
 	"github.com/Oralordos/Game-Programming-Project/graphics"
+	"github.com/nu7hatch/gouuid"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 type PlayerFrontend struct {
 	player  int
 	window  *graphics.Window
+	id      *uuid.UUID
 	units   []*graphics.Unit
 	level   *graphics.Tilemap
 	inputs  []InputSystem
@@ -27,12 +29,13 @@ func NewPlayerFrontend(win *graphics.Window) *PlayerFrontend {
 		eventCh: make(chan events.Event),
 		close:   make(chan struct{}),
 	}
+	id, err := uuid.NewV4()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	p.id = id
 	events.AddListener(p.eventCh, events.DirFront, 0)
 	return &p
-}
-
-func (p *PlayerFrontend) SetLevel(level *graphics.Tilemap) {
-	p.level = level
 }
 
 func (p *PlayerFrontend) Mainloop() {
@@ -120,6 +123,9 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 			}
 		}
 		p.level = graphics.NewTilemap(tiles, e.TileWidth, e.TileHeight)
+		for _, unit := range e.Units {
+			p.processEvent(unit)
+		}
 	}
 }
 

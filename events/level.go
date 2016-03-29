@@ -1,10 +1,21 @@
 package events
 
+type ReloadLevel struct{}
+
+func (c ReloadLevel) GetDirection() int {
+	return DirSystem
+}
+
+func (c ReloadLevel) GetSubValue() int {
+	return 0
+}
+
 type ChangeLevel struct {
 	Tilemap               string
 	Images                [][]int
 	TileWidth, TileHeight int32
 	CollideMap            [][]bool
+	Units                 []Event
 }
 
 func (c *ChangeLevel) GetDirection() int {
@@ -16,7 +27,7 @@ func (c *ChangeLevel) GetSubValue() int {
 }
 
 func isChangeLevel(items []string) bool {
-	return isMatch(items, []string{"Tilemap", "Images", "TileWidth", "TileHeight", "CollideMap"})
+	return isMatch(items, []string{"Tilemap", "Images", "TileWidth", "TileHeight", "CollideMap", "Units"})
 }
 
 func getChangeLevel(data map[string]interface{}) Event {
@@ -48,6 +59,23 @@ func getChangeLevel(data map[string]interface{}) Event {
 	e.CollideMap = get2Dbool(data["CollideMap"])
 	if e.CollideMap == nil {
 		return nil
+	}
+
+	units, ok := data["Units"].([]interface{})
+	if !ok {
+		return nil
+	}
+	results := make([]Event, len(units))
+	for i, v := range units {
+		unitData, ok := v.(map[string]interface{})
+		if !ok {
+			return nil
+		}
+		unit := DecodeJSON(unitData)
+		if unit == nil {
+			return nil
+		}
+		results[i] = unit
 	}
 
 	return &e
