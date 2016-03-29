@@ -25,6 +25,7 @@ func main() {
 	frontend := NewPlayerFrontend(win)
 
 	if len(os.Args) == 1 {
+		go backendLoop()
 		create := &events.CreateUnit{
 			ID: 1,
 			X:  48,

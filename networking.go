@@ -91,11 +91,6 @@ func (n *NetworkFrontend) handleEvent(ev events.Event) {
 	if err != nil {
 		log.Println(err)
 	}
-	if ch, ok := ev.(*events.ChangeLevel); ok {
-		for _, unit := range ch.Units {
-			n.handleEvent(unit)
-		}
-	}
 }
 
 type NetworkBackend struct {

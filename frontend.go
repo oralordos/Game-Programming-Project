@@ -123,6 +123,10 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 			}
 		}
 		p.level = graphics.NewTilemap(tiles, e.TileWidth, e.TileHeight)
+		for _, unit := range p.units {
+			unit.Destroy()
+		}
+		p.units = make([]*graphics.Unit, 0, len(e.Units))
 		for _, unit := range e.Units {
 			p.processEvent(unit)
 		}

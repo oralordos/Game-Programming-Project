@@ -77,6 +77,7 @@ func getChangeLevel(data map[string]interface{}) Event {
 		}
 		results[i] = unit
 	}
+	e.Units = results
 
 	return &e
 }

@@ -14,10 +14,6 @@ type BackEnd struct {
 
 const frameDelta = 33 * time.Millisecond
 
-func init() {
-	go backendLoop()
-}
-
 func backendLoop() {
 	b := &BackEnd{}
 	b.unitInfo = []*unit{}
@@ -37,6 +33,10 @@ func (b *BackEnd) processEvent(ev events.Event) {
 		b.unitInfo = append(b.unitInfo, NewUnit(e.X, e.Y, PlayerT, e.ID))
 	case *events.ChangeLevel:
 		b.lastLevel = e
+		for _, unit := range b.unitInfo {
+			unit.Destroy()
+		}
+		b.unitInfo = make([]*unit, 0, len(e.Units))
 		for _, unit := range e.Units {
 			b.processEvent(unit)
 		}

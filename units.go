@@ -82,6 +82,10 @@ func (u *unit) updateUnit() {
 	events.SendEvent(&e)
 }
 
+func (u *unit) Destroy() {
+	close(u.close)
+}
+
 func (u *unit) processEvent(ev events.Event) {
 	switch e := ev.(type) {
 	case *events.InputUpdate:
