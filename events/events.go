@@ -63,7 +63,7 @@ func (e *EventManager) add(list *listener) {
 		e.systemOuts = append(e.systemOuts, list)
 	}
 	if list.direction&DirFront == DirFront {
-		e.frontOuts = append(e.systemOuts, list)
+		e.frontOuts = append(e.frontOuts, list)
 	}
 }
 

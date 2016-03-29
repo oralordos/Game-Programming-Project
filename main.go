@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
 	"github.com/Oralordos/Game-Programming-Project/graphics"
@@ -44,7 +43,6 @@ func main() {
 		TileHeight: 32,
 		CollideMap: collide,
 	}
-	// level := graphics.NewTilemap(tiles, 32, 32)
 
 	win, err := graphics.CreateWindow(800, 600, "Test")
 	if err != nil {
@@ -53,11 +51,8 @@ func main() {
 	defer win.Destroy()
 
 	frontend := NewPlayerFrontend(win)
-	// frontend.SetLevel(level)
-
 	events.SendEvent(change)
 	events.SendEvent(create)
-	time.Sleep(20 * time.Millisecond)
 	frontend.AttachUnit(1)
 
 	frontend.Mainloop()
