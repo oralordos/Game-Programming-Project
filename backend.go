@@ -16,7 +16,7 @@ type BackEnd struct {
 const frameDelta = 33 * time.Millisecond
 
 func init() {
-	go backendLoop() //potentual problem here
+	go backendLoop()
 }
 
 func backendLoop() {
@@ -25,11 +25,10 @@ func backendLoop() {
 	inChn := make(chan events.Event)
 	events.AddListener(inChn, events.DirSystem, 0)
 	for {
-		ev := <-inChn
-		fmt.Printf("%T\n", ev)
 		select {
 		case todo := <-inChn:
-			b.processEvent(todo) //potentual problem here
+			fmt.Printf("%T\n", todo)
+			b.processEvent(todo)
 		}
 	}
 }
@@ -40,13 +39,3 @@ func (b *BackEnd) processEvent(ev events.Event) {
 		b.unitInfo = append(b.unitInfo, NewUnit(e.X, e.Y, PlayerT, e.ID))
 	}
 }
-
-// switch e := todo.(type) {
-// case *events.UnitMoved:
-// 	ev := events.UnitMoved{
-// 		ID: 1,
-// 		X:  0,
-// 		Y:  -1,
-// 	}
-// 	events.SendEvent(ev)
-// }
