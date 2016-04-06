@@ -28,6 +28,7 @@ func StartNetworkListener() {
 type NetworkFrontend struct {
 	id      *uuid.UUID
 	conn    net.Conn
+	decoder *json.Decoder
 	eventCh chan events.Event
 	close   chan struct{}
 }
@@ -35,6 +36,7 @@ type NetworkFrontend struct {
 func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 	n := NetworkFrontend{
 		conn:    conn,
+		decoder: json.NewDecoder(conn),
 		eventCh: make(chan events.Event),
 		close:   make(chan struct{}),
 	}
@@ -53,7 +55,7 @@ func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 func (n *NetworkFrontend) readloop() {
 	for {
 		data := make(map[string]interface{})
-		err := json.NewDecoder(n.conn).Decode(&data)
+		err := n.decoder.Decode(&data)
 		if err != nil {
 			log.Println(err)
 			break
@@ -95,6 +97,7 @@ func (n *NetworkFrontend) handleEvent(ev events.Event) {
 
 type NetworkBackend struct {
 	conn    net.Conn
+	decoder *json.Decoder
 	eventCh chan events.Event
 	close   chan struct{}
 }
@@ -109,6 +112,7 @@ func NewNetworkBackend(address string) *NetworkBackend {
 		log.Fatalln(err)
 	}
 	n.conn = conn
+	n.decoder = json.NewDecoder(n.conn)
 	events.AddListener(n.eventCh, events.DirSystem, 0)
 	go n.readloop()
 	go n.mainloop()
@@ -118,7 +122,7 @@ func NewNetworkBackend(address string) *NetworkBackend {
 func (n *NetworkBackend) readloop() {
 	for {
 		data := make(map[string]interface{})
-		err := json.NewDecoder(n.conn).Decode(&data)
+		err := n.decoder.Decode(&data)
 		if err != nil {
 			log.Println(err)
 			break
