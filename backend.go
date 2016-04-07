@@ -30,7 +30,7 @@ func backendLoop() {
 func (b *BackEnd) processEvent(ev events.Event) {
 	switch e := ev.(type) {
 	case *events.CreateUnit:
-		b.unitInfo = append(b.unitInfo, NewUnit(e.X, e.Y, PlayerT, e.ID))
+		b.unitInfo = append(b.unitInfo, NewUnit(e.X, e.Y, PlayerT, e.ID, b))
 	case *events.ChangeLevel:
 		b.lastLevel = e
 		for _, unit := range b.unitInfo {
@@ -47,8 +47,8 @@ func (b *BackEnd) processEvent(ev events.Event) {
 				ID: unit.unitID,
 				X:  unit.x,
 				Y:  unit.y,
-				W:  unit.typ.W,
-				H:  unit.typ.H,
+				W:  32,
+				H:  32,
 			}
 		}
 		newLevel := &events.ChangeLevel{
