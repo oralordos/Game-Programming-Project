@@ -128,7 +128,7 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 		}
 		p.units = make([]*graphics.Unit, 0, len(e.Units))
 		for _, unit := range e.Units {
-			p.processEvent(unit)
+			p.processEvent(&unit)
 		}
 	}
 }

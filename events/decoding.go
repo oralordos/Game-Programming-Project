@@ -1,86 +1,60 @@
 package events
 
-func DecodeJSON(data map[string]interface{}) Event {
-	keys := []string{}
-	for k := range data {
-		keys = append(keys, k)
-	}
-	switch {
-	case isChangeLevel(keys):
-		return getChangeLevel(data)
-	case isUnitMoved(keys):
-		return getUnitMoved(data)
-	case isInputUpdate(keys):
-		return getInputUpdate(data)
-	case isCreateUnit(keys):
-		return getCreateUnit(data)
-	case isDestroyUnit(keys):
-		return getDestroyUnit(data)
-	}
-	return nil
-}
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+)
 
-func isMatch(items, allowed []string) bool {
-	if len(items) != len(allowed) {
-		return false
-	}
-	for _, v := range allowed {
-		found := false
-		for _, item := range items {
-			if v == item {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
-}
+const (
+	TypeUnitMoved = iota
+	TypeInputUpdate
+	TypeCreateUnit
+	TypeDestroyUnit
+	TypeReloadLevel
+	TypeChangeLevel
+)
 
-func get2Dint(data interface{}) [][]int {
-	dataTable, ok := data.([]interface{})
-	if !ok {
-		return nil
-	}
-	results := make([][]int, len(dataTable))
-	for y, row := range dataTable {
-		rowItems, ok := row.([]interface{})
-		if !ok {
-			return nil
+func DecodeJSON(typ int, decod *json.Decoder) (Event, error) {
+	switch typ {
+	case TypeUnitMoved:
+		var um UnitMoved
+		if err := decod.Decode(&um); err != nil {
+			log.Printf("Unable to decode: %d\n", typ)
+			return nil, err
 		}
-		results[y] = make([]int, len(rowItems))
-		for x, item := range rowItems {
-			itemVal, ok := item.(float64)
-			if !ok {
-				return nil
-			}
-			results[y][x] = int(itemVal + 0.5)
+		return &um, nil
+	case TypeInputUpdate:
+		var iu InputUpdate
+		if err := decod.Decode(&iu); err != nil {
+			return nil, err
 		}
-	}
-	return results
-}
-
-func get2Dbool(data interface{}) [][]bool {
-	dataTable, ok := data.([]interface{})
-	if !ok {
-		return nil
-	}
-	results := make([][]bool, len(dataTable))
-	for y, row := range dataTable {
-		rowItems, ok := row.([]interface{})
-		if !ok {
-			return nil
+		return &iu, nil
+	case TypeCreateUnit:
+		var cu CreateUnit
+		if err := decod.Decode(&cu); err != nil {
+			return nil, err
 		}
-		results[y] = make([]bool, len(rowItems))
-		for x, item := range rowItems {
-			itemVal, ok := item.(bool)
-			if !ok {
-				return nil
-			}
-			results[y][x] = itemVal
+		return &cu, nil
+	case TypeDestroyUnit:
+		var du DestroyUnit
+		if err := decod.Decode(&du); err != nil {
+			return nil, err
 		}
+		return &du, nil
+	case TypeReloadLevel:
+		var rl ReloadLevel
+		if err := decod.Decode(&rl); err != nil {
+			return nil, err
+		}
+		return rl, nil
+	case TypeChangeLevel:
+		var cl ChangeLevel
+		if err := decod.Decode(&cl); err != nil {
+			log.Println("Got an error:", err)
+			return nil, err
+		}
+		return &cl, nil
 	}
-	return results
+	return nil, fmt.Errorf("Unknown event type: %d\n", typ)
 }

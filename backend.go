@@ -38,12 +38,12 @@ func (b *BackEnd) processEvent(ev events.Event) {
 		}
 		b.unitInfo = make([]*unit, 0, len(e.Units))
 		for _, unit := range e.Units {
-			b.processEvent(unit)
+			b.processEvent(&unit)
 		}
 	case events.ReloadLevel:
-		units := make([]events.Event, len(b.unitInfo))
+		units := make([]events.CreateUnit, len(b.unitInfo))
 		for i, unit := range b.unitInfo {
-			units[i] = &events.CreateUnit{
+			units[i] = events.CreateUnit{
 				ID: unit.unitID,
 				X:  unit.x,
 				Y:  unit.y,

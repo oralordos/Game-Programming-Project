@@ -10,6 +10,7 @@ type Event interface {
 	GetSubValue() int
 	SetDuplicate(d bool)
 	HasDuplicate() bool
+	GetTypeID() int
 }
 
 type duplicateOnce bool

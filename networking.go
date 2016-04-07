@@ -21,15 +21,15 @@ type Network struct {
 
 func (n *Network) readloop() {
 	for {
-		data := make(map[string]interface{})
-		err := n.decoder.Decode(&data)
+		var typ int
+		err := n.decoder.Decode(&typ)
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		ev := events.DecodeJSON(data)
-		if ev == nil {
-			log.Println("Unable to parse event")
+		ev, err := events.DecodeJSON(typ, n.decoder)
+		if err != nil {
+			log.Println(err)
 			continue
 		}
 		ev.SetDuplicate(true)
@@ -61,7 +61,13 @@ func (n *Network) handleEvent(ev events.Event) {
 	if ev.HasDuplicate() {
 		return
 	}
-	err := json.NewEncoder(n.conn).Encode(ev)
+	encoder := json.NewEncoder(n.conn)
+	err := encoder.Encode(ev.GetTypeID())
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = encoder.Encode(ev)
 	if err != nil {
 		log.Println(err)
 	}

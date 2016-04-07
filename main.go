@@ -26,14 +26,14 @@ func main() {
 
 	if len(os.Args) == 1 {
 		go backendLoop()
-		create := &events.CreateUnit{
+		create := events.CreateUnit{
 			ID: 1,
 			X:  48,
 			Y:  48,
 			W:  32,
 			H:  32,
 		}
-		create2 := &events.CreateUnit{
+		create2 := events.CreateUnit{
 			ID: 2,
 			X:  105,
 			Y:  105,
@@ -61,7 +61,7 @@ func main() {
 			TileWidth:  32,
 			TileHeight: 32,
 			CollideMap: collide,
-			Units:      []events.Event{create, create2},
+			Units:      []events.CreateUnit{create, create2},
 		}
 
 		go StartNetworkListener()
