@@ -10,12 +10,19 @@ func (c ReloadLevel) GetSubValue() int {
 	return 0
 }
 
+func (c ReloadLevel) SetDuplicate(d bool) {}
+
+func (c ReloadLevel) HasDuplicate() bool {
+	return true
+}
+
 type ChangeLevel struct {
 	Tilemap               string
 	Images                [][]int
 	TileWidth, TileHeight int32
 	CollideMap            [][]bool
 	Units                 []Event
+	duplicateOnce
 }
 
 func (c *ChangeLevel) GetDirection() int {
@@ -27,7 +34,7 @@ func (c *ChangeLevel) GetSubValue() int {
 }
 
 func isChangeLevel(items []string) bool {
-	return isMatch(items, []string{"Tilemap", "Images", "TileWidth", "TileHeight", "CollideMap", "Units"})
+	return isMatch(items, []string{"Tilemap", "Images", "TileWidth", "TileHeight", "CollideMap", "Units", "duplicateOnce"})
 }
 
 func getChangeLevel(data map[string]interface{}) Event {
@@ -60,6 +67,12 @@ func getChangeLevel(data map[string]interface{}) Event {
 	if e.CollideMap == nil {
 		return nil
 	}
+
+	dup, ok := data["duplicateOnce"].(bool)
+	if !ok {
+		return nil
+	}
+	e.duplicateOnce = duplicateOnce(dup)
 
 	units, ok := data["Units"].([]interface{})
 	if !ok {

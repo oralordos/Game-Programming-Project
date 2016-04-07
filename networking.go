@@ -11,6 +11,62 @@ import (
 
 const port = ":10328"
 
+type Network struct {
+	conn    net.Conn
+	decoder *json.Decoder
+	dir     int
+	eventCh chan events.Event
+	close   chan struct{}
+}
+
+func (n *Network) readloop() {
+	for {
+		data := make(map[string]interface{})
+		err := n.decoder.Decode(&data)
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		ev := events.DecodeJSON(data)
+		if ev == nil {
+			log.Println("Unable to parse event")
+			continue
+		}
+		ev.SetDuplicate(true)
+		events.SendEvent(ev)
+	}
+}
+
+func (n *Network) mainloop() {
+loop:
+	for {
+		select {
+		case ev := <-n.eventCh:
+			n.handleEvent(ev)
+		case _, ok := <-n.close:
+			if !ok {
+				break loop
+			}
+		}
+	}
+	events.RemoveListener(n.eventCh, n.dir, 0)
+	n.conn.Close()
+}
+
+func (n *Network) Destroy() {
+	close(n.close)
+}
+
+func (n *Network) handleEvent(ev events.Event) {
+	if ev.HasDuplicate() {
+		return
+	}
+	err := json.NewEncoder(n.conn).Encode(ev)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func StartNetworkListener() {
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
@@ -26,19 +82,19 @@ func StartNetworkListener() {
 }
 
 type NetworkFrontend struct {
-	id      *uuid.UUID
-	conn    net.Conn
-	decoder *json.Decoder
-	eventCh chan events.Event
-	close   chan struct{}
+	Network
+	id *uuid.UUID
 }
 
 func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 	n := NetworkFrontend{
-		conn:    conn,
-		decoder: json.NewDecoder(conn),
-		eventCh: make(chan events.Event),
-		close:   make(chan struct{}),
+		Network: Network{
+			conn:    conn,
+			dir:     events.DirFront,
+			decoder: json.NewDecoder(conn),
+			eventCh: make(chan events.Event),
+			close:   make(chan struct{}),
+		},
 	}
 	id, err := uuid.NewV4()
 	if err != nil {
@@ -52,60 +108,17 @@ func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 	return &n
 }
 
-func (n *NetworkFrontend) readloop() {
-	for {
-		data := make(map[string]interface{})
-		err := n.decoder.Decode(&data)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		ev := events.DecodeJSON(data)
-		if ev == nil {
-			log.Println("Unable to parse event")
-			continue
-		}
-		events.SendEvent(ev)
-	}
-}
-
-func (n *NetworkFrontend) mainloop() {
-loop:
-	for {
-		select {
-		case ev := <-n.eventCh:
-			n.handleEvent(ev)
-		case _, ok := <-n.close:
-			if !ok {
-				break loop
-			}
-		}
-	}
-	events.RemoveListener(n.eventCh, events.DirFront, 0)
-}
-
-func (n *NetworkFrontend) Destroy() {
-	close(n.close)
-}
-
-func (n *NetworkFrontend) handleEvent(ev events.Event) {
-	err := json.NewEncoder(n.conn).Encode(ev)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 type NetworkBackend struct {
-	conn    net.Conn
-	decoder *json.Decoder
-	eventCh chan events.Event
-	close   chan struct{}
+	Network
 }
 
 func NewNetworkBackend(address string) *NetworkBackend {
 	n := NetworkBackend{
-		eventCh: make(chan events.Event),
-		close:   make(chan struct{}),
+		Network: Network{
+			dir:     events.DirSystem,
+			eventCh: make(chan events.Event),
+			close:   make(chan struct{}),
+		},
 	}
 	conn, err := net.Dial("tcp", address+port)
 	if err != nil {
@@ -117,51 +130,4 @@ func NewNetworkBackend(address string) *NetworkBackend {
 	go n.readloop()
 	go n.mainloop()
 	return &n
-}
-
-func (n *NetworkBackend) readloop() {
-	for {
-		data := make(map[string]interface{})
-		err := n.decoder.Decode(&data)
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		ev := events.DecodeJSON(data)
-		if ev == nil {
-			log.Println("Unable to parse event")
-			continue
-		}
-		events.SendEvent(ev)
-	}
-}
-
-func (n *NetworkBackend) mainloop() {
-loop:
-	for {
-		select {
-		case ev := <-n.eventCh:
-			n.handleEvent(ev)
-		case _, ok := <-n.close:
-			if !ok {
-				break loop
-			}
-		}
-	}
-	events.RemoveListener(n.eventCh, events.DirSystem, 0)
-}
-
-func (n *NetworkBackend) handleEvent(ev events.Event) {
-	switch ev.(type) {
-	case events.ReloadLevel:
-		return
-	case *events.ChangeLevel:
-		return
-	case *events.CreateUnit:
-		return
-	}
-	err := json.NewEncoder(n.conn).Encode(ev)
-	if err != nil {
-		log.Println(err)
-	}
 }

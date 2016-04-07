@@ -8,6 +8,18 @@ const (
 type Event interface {
 	GetDirection() int
 	GetSubValue() int
+	SetDuplicate(d bool)
+	HasDuplicate() bool
+}
+
+type duplicateOnce bool
+
+func (o *duplicateOnce) SetDuplicate(d bool) {
+	*o = duplicateOnce(d)
+}
+
+func (o *duplicateOnce) HasDuplicate() bool {
+	return bool(*o)
 }
 
 type listener struct {

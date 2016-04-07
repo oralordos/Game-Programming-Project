@@ -3,6 +3,7 @@ package events
 type UnitMoved struct {
 	ID         int
 	NewX, NewY float64
+	duplicateOnce
 }
 
 func (u *UnitMoved) GetDirection() int {
@@ -14,7 +15,7 @@ func (u *UnitMoved) GetSubValue() int {
 }
 
 func isUnitMoved(items []string) bool {
-	return isMatch(items, []string{"ID", "NewX", "NewY"})
+	return isMatch(items, []string{"ID", "NewX", "NewY", "duplicateOnce"})
 }
 
 func getUnitMoved(data map[string]interface{}) Event {
@@ -38,12 +39,19 @@ func getUnitMoved(data map[string]interface{}) Event {
 	}
 	e.NewY = newy
 
+	dup, ok := data["duplicateOnce"].(bool)
+	if !ok {
+		return nil
+	}
+	e.duplicateOnce = duplicateOnce(dup)
+
 	return &e
 }
 
 type InputUpdate struct {
 	ID   int
 	X, Y float64
+	duplicateOnce
 }
 
 func (u *InputUpdate) GetDirection() int {
@@ -55,7 +63,7 @@ func (u *InputUpdate) GetSubValue() int {
 }
 
 func isInputUpdate(items []string) bool {
-	return isMatch(items, []string{"ID", "X", "Y"})
+	return isMatch(items, []string{"ID", "X", "Y", "duplicateOnce"})
 }
 
 func getInputUpdate(data map[string]interface{}) Event {
@@ -79,6 +87,12 @@ func getInputUpdate(data map[string]interface{}) Event {
 	}
 	e.Y = y
 
+	dup, ok := data["duplicateOnce"].(bool)
+	if !ok {
+		return nil
+	}
+	e.duplicateOnce = duplicateOnce(dup)
+
 	return &e
 }
 
@@ -86,6 +100,7 @@ type CreateUnit struct {
 	ID   int
 	X, Y float64
 	W, H int32
+	duplicateOnce
 }
 
 func (u *CreateUnit) GetDirection() int {
@@ -97,7 +112,7 @@ func (u *CreateUnit) GetSubValue() int {
 }
 
 func isCreateUnit(items []string) bool {
-	return isMatch(items, []string{"ID", "X", "Y", "W", "H"})
+	return isMatch(items, []string{"ID", "X", "Y", "W", "H", "duplicateOnce"})
 }
 
 func getCreateUnit(data map[string]interface{}) Event {
@@ -133,11 +148,18 @@ func getCreateUnit(data map[string]interface{}) Event {
 	}
 	e.H = int32(h + 0.5)
 
+	dup, ok := data["duplicateOnce"].(bool)
+	if !ok {
+		return nil
+	}
+	e.duplicateOnce = duplicateOnce(dup)
+
 	return &e
 }
 
 type DestroyUnit struct {
 	ID int
+	duplicateOnce
 }
 
 func (u *DestroyUnit) GetDirection() int {
@@ -149,7 +171,7 @@ func (u *DestroyUnit) GetSubValue() int {
 }
 
 func isDestroyUnit(items []string) bool {
-	return isMatch(items, []string{"ID"})
+	return isMatch(items, []string{"ID", "duplicateOnce"})
 }
 
 func getDestroyUnit(data map[string]interface{}) Event {
@@ -160,6 +182,12 @@ func getDestroyUnit(data map[string]interface{}) Event {
 		return nil
 	}
 	e.ID = int(id + 0.5)
+
+	dup, ok := data["duplicateOnce"].(bool)
+	if !ok {
+		return nil
+	}
+	e.duplicateOnce = duplicateOnce(dup)
 
 	return &e
 }
