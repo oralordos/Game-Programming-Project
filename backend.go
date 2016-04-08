@@ -10,13 +10,18 @@ import (
 type BackEnd struct {
 	unitInfo  []*unit
 	lastLevel *events.ChangeLevel
+	players   map[string]int
+	nextID    int
 }
 
-const frameDelta = 33 * time.Millisecond
+const frameDelta = time.Second / 30
 
 func backendLoop() {
-	b := &BackEnd{}
-	b.unitInfo = []*unit{}
+	b := &BackEnd{
+		nextID:   1,
+		unitInfo: []*unit{},
+		players:  map[string]int{},
+	}
 	inChn := make(chan events.Event)
 	events.AddListener(inChn, events.DirSystem, 0)
 	for {
@@ -37,8 +42,20 @@ func (b *BackEnd) processEvent(ev events.Event) {
 			unit.Destroy()
 		}
 		b.unitInfo = make([]*unit, 0, len(e.Units))
+		b.nextID = 1
 		for _, unit := range e.Units {
 			b.processEvent(&unit)
+			if b.nextID <= unit.ID {
+				b.nextID = unit.ID + 1
+			}
+		}
+		for k, v := range b.players {
+			if _, ok := e.Players[k]; !ok {
+				if b.nextID <= v {
+					b.nextID = v + 1
+				}
+				b.createPlayerUnit(v, k)
+			}
 		}
 	case events.ReloadLevel:
 		units := make([]events.CreateUnit, len(b.unitInfo))
@@ -51,14 +68,41 @@ func (b *BackEnd) processEvent(ev events.Event) {
 				H:  32,
 			}
 		}
+		players := make(map[string]int)
+		for k, v := range b.players {
+			players[k] = v
+		}
 		newLevel := &events.ChangeLevel{
 			Tilemap:    b.lastLevel.Tilemap,
 			Images:     b.lastLevel.Images,
 			TileWidth:  b.lastLevel.TileWidth,
 			TileHeight: b.lastLevel.TileHeight,
+			StartX:     b.lastLevel.StartX,
+			StartY:     b.lastLevel.StartY,
 			CollideMap: b.lastLevel.CollideMap,
 			Units:      units,
+			Players:    players,
 		}
 		events.SendEvent(newLevel)
+	case *events.PlayerJoin:
+		id := b.nextID
+		b.players[e.UUID] = id
+		b.nextID++
+		if b.lastLevel == nil {
+			return
+		}
+		b.createPlayerUnit(id, e.UUID)
 	}
+}
+
+func (b *BackEnd) createPlayerUnit(id int, uuid string) {
+	createPlayer := events.CreateUnit{
+		ID:       id,
+		X:        b.lastLevel.StartX,
+		Y:        b.lastLevel.StartY,
+		W:        32,
+		H:        32,
+		AttachTo: uuid,
+	}
+	events.SendEvent(&createPlayer)
 }

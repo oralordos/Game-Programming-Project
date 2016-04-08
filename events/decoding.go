@@ -3,7 +3,6 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 )
 
 const (
@@ -13,6 +12,9 @@ const (
 	TypeDestroyUnit
 	TypeReloadLevel
 	TypeChangeLevel
+	TypePlayerJoin
+	TypePlayerLeave
+	TypeSetUUID
 )
 
 func DecodeJSON(typ int, decod *json.Decoder) (Event, error) {
@@ -20,7 +22,6 @@ func DecodeJSON(typ int, decod *json.Decoder) (Event, error) {
 	case TypeUnitMoved:
 		var um UnitMoved
 		if err := decod.Decode(&um); err != nil {
-			log.Printf("Unable to decode: %d\n", typ)
 			return nil, err
 		}
 		return &um, nil
@@ -51,10 +52,27 @@ func DecodeJSON(typ int, decod *json.Decoder) (Event, error) {
 	case TypeChangeLevel:
 		var cl ChangeLevel
 		if err := decod.Decode(&cl); err != nil {
-			log.Println("Got an error:", err)
 			return nil, err
 		}
 		return &cl, nil
+	case TypePlayerJoin:
+		var pj PlayerJoin
+		if err := decod.Decode(&pj); err != nil {
+			return nil, err
+		}
+		return &pj, nil
+	case TypePlayerLeave:
+		var pl PlayerLeave
+		if err := decod.Decode(&pl); err != nil {
+			return nil, err
+		}
+		return &pl, nil
+	case TypeSetUUID:
+		var sid SetUUID
+		if err := decod.Decode(&sid); err != nil {
+			return nil, err
+		}
+		return &sid, nil
 	}
 	return nil, fmt.Errorf("Unknown event type: %d\n", typ)
 }

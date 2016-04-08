@@ -23,6 +23,14 @@ func (o *duplicateOnce) HasDuplicate() bool {
 	return bool(*o)
 }
 
+type noDuplicate struct{}
+
+func (n noDuplicate) SetDuplicate(d bool) {}
+
+func (n noDuplicate) HasDuplicate() bool {
+	return true
+}
+
 type listener struct {
 	ch        chan<- Event
 	direction int
@@ -136,9 +144,7 @@ func (e *EventManager) RemoveListener(list chan<- Event, direction int, subVal i
 }
 
 func (e *EventManager) SendEvent(event Event) {
-	go func() {
-		e.eInput <- event
-	}()
+	e.eInput <- event
 }
 
 func (e *EventManager) Close() {

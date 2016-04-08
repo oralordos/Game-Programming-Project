@@ -71,6 +71,10 @@ func (n *Network) handleEvent(ev events.Event) {
 	if ev.HasDuplicate() {
 		return
 	}
+	n.sendEvent(ev)
+}
+
+func (n *Network) sendEvent(ev events.Event) {
 	encoder := json.NewEncoder(n.conn)
 	err := encoder.Encode(ev.GetTypeID())
 	if err != nil {
@@ -115,7 +119,7 @@ func StartNetworkListener() {
 
 type NetworkFrontend struct {
 	Network
-	id *uuid.UUID
+	id string
 }
 
 func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
@@ -132,10 +136,18 @@ func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	n.id = id
+	n.id = id.String()
 	events.AddListener(n.eventCh, events.DirFront, 0)
+	setEvent := &events.SetUUID{
+		UUID: n.id,
+	}
+	n.sendEvent(setEvent)
 	go n.readloop()
 	go n.mainloop()
+	joinEvent := &events.PlayerJoin{
+		UUID: n.id,
+	}
+	events.SendEvent(joinEvent)
 	events.SendEvent(events.ReloadLevel{})
 	return &n
 }

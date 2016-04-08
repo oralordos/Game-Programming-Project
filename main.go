@@ -22,24 +22,17 @@ func main() {
 	}
 	defer win.Destroy()
 
+	if len(os.Args) == 1 {
+		go backendLoop()
+	}
+
 	frontend := NewPlayerFrontend(win)
 
 	if len(os.Args) == 1 {
-		go backendLoop()
-		create := events.CreateUnit{
-			ID: 1,
-			X:  48,
-			Y:  48,
-			W:  32,
-			H:  32,
+		joinEvent := &events.PlayerJoin{
+			UUID: frontend.id,
 		}
-		create2 := events.CreateUnit{
-			ID: 2,
-			X:  105,
-			Y:  105,
-			W:  32,
-			H:  32,
-		}
+		events.SendEvent(joinEvent)
 
 		tiles := [][]int{}
 		collide := [][]bool{}
@@ -60,17 +53,18 @@ func main() {
 			Images:     tiles,
 			TileWidth:  32,
 			TileHeight: 32,
+			StartX:     105,
+			StartY:     105,
 			CollideMap: collide,
-			Units:      []events.CreateUnit{create, create2},
+			Units:      []events.CreateUnit{},
+			Players:    make(map[string]int),
 		}
 
 		go StartNetworkListener()
 		time.Sleep(10 * time.Millisecond)
 		events.SendEvent(change)
-		frontend.AttachUnit(1)
 	} else {
 		NewNetworkBackend(os.Args[1])
-		frontend.AttachUnit(2)
 	}
 	frontend.Mainloop()
 }

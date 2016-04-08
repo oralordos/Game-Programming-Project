@@ -40,6 +40,7 @@ type CreateUnit struct {
 	ID            int
 	X, Y          float64
 	W, H          int32
+	AttachTo      string
 	duplicateOnce `json:"-"`
 }
 

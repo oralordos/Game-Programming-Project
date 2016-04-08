@@ -1,6 +1,8 @@
 package events
 
-type ReloadLevel struct{}
+type ReloadLevel struct {
+	noDuplicate `json:"-"`
+}
 
 func (c ReloadLevel) GetDirection() int {
 	return DirSystem
@@ -8,12 +10,6 @@ func (c ReloadLevel) GetDirection() int {
 
 func (c ReloadLevel) GetSubValue() int {
 	return 0
-}
-
-func (c ReloadLevel) SetDuplicate(d bool) {}
-
-func (c ReloadLevel) HasDuplicate() bool {
-	return true
 }
 
 func (c ReloadLevel) GetTypeID() int {
@@ -24,8 +20,10 @@ type ChangeLevel struct {
 	Tilemap               string
 	Images                [][]int
 	TileWidth, TileHeight int32
+	StartX, StartY        float64
 	CollideMap            [][]bool
 	Units                 []CreateUnit
+	Players               map[string]int
 	duplicateOnce         `json:"-"`
 }
 

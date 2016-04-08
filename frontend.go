@@ -13,7 +13,7 @@ import (
 type PlayerFrontend struct {
 	player  int
 	window  *graphics.Window
-	id      *uuid.UUID
+	id      string
 	units   []*graphics.Unit
 	level   *graphics.Tilemap
 	inputs  []InputSystem
@@ -33,7 +33,7 @@ func NewPlayerFrontend(win *graphics.Window) *PlayerFrontend {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	p.id = id
+	p.id = id.String()
 	events.AddListener(p.eventCh, events.DirFront, 0)
 	return &p
 }
@@ -59,8 +59,12 @@ loop:
 	}
 	events.RemoveListener(p.eventCh, events.DirFront, 0)
 	for _, v := range p.units {
-		events.SendEvent(&events.DestroyUnit{ID: v.GetID()})
+		v.Destroy()
 	}
+	leaveEvent := &events.PlayerLeave{
+		UUID: p.id,
+	}
+	events.SendEvent(leaveEvent)
 }
 
 func (p *PlayerFrontend) Destroy() {
@@ -101,6 +105,9 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 	switch e := ev.(type) {
 	case *events.CreateUnit:
 		p.units = append(p.units, graphics.NewUnit(e.X, e.Y, e.W, e.H, e.ID))
+		if e.AttachTo == p.id {
+			p.player = e.ID
+		}
 	case *events.DestroyUnit:
 		for i, v := range p.units {
 			if v.GetID() == e.ID {
@@ -109,32 +116,35 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 			}
 		}
 	case *events.ChangeLevel:
-		tiles := [][]graphics.Tile{}
-		for y, row := range e.Images {
-			tiles = append(tiles, []graphics.Tile{})
-			for _, img := range row {
-				var newTile graphics.Tile
-				if img == 0 {
-					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
-				} else {
-					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
-				}
-				tiles[y] = append(tiles[y], newTile)
-			}
-		}
-		p.level = graphics.NewTilemap(tiles, e.TileWidth, e.TileHeight)
-		for _, unit := range p.units {
-			unit.Destroy()
-		}
-		p.units = make([]*graphics.Unit, 0, len(e.Units))
-		for _, unit := range e.Units {
-			p.processEvent(&unit)
-		}
+		p.loadLevel(e)
+	case *events.SetUUID:
+		p.id = e.UUID
 	}
 }
 
-func (p *PlayerFrontend) AttachUnit(id int) {
-	p.player = id
+func (p *PlayerFrontend) loadLevel(e *events.ChangeLevel) {
+	tiles := [][]graphics.Tile{}
+	for y, row := range e.Images {
+		tiles = append(tiles, []graphics.Tile{})
+		for _, img := range row {
+			var newTile graphics.Tile
+			if img == 0 {
+				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
+			} else {
+				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
+			}
+			tiles[y] = append(tiles[y], newTile)
+		}
+	}
+	p.level = graphics.NewTilemap(tiles, e.TileWidth, e.TileHeight)
+	for _, unit := range p.units {
+		unit.Destroy()
+	}
+	p.units = make([]*graphics.Unit, 0, len(e.Units))
+	for _, unit := range e.Units {
+		p.processEvent(&unit)
+	}
+	p.player = e.Players[p.id]
 }
 
 func (p *PlayerFrontend) GetUnit(id int) *graphics.Unit {
