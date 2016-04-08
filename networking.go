@@ -9,7 +9,7 @@ import (
 	"github.com/nu7hatch/gouuid"
 )
 
-const port = ":10328"
+const port = "10328"
 
 type Network struct {
 	conn    net.Conn
@@ -24,13 +24,23 @@ func (n *Network) readloop() {
 		var typ int
 		err := n.decoder.Decode(&typ)
 		if err != nil {
+			if n, ok := err.(net.Error); ok {
+				if n.Temporary() {
+					continue
+				}
+			}
 			log.Println(err)
 			break
 		}
 		ev, err := events.DecodeJSON(typ, n.decoder)
 		if err != nil {
+			if n, ok := err.(net.Error); ok {
+				if n.Temporary() {
+					continue
+				}
+			}
 			log.Println(err)
-			continue
+			break
 		}
 		ev.SetDuplicate(true)
 		events.SendEvent(ev)
@@ -64,17 +74,33 @@ func (n *Network) handleEvent(ev events.Event) {
 	encoder := json.NewEncoder(n.conn)
 	err := encoder.Encode(ev.GetTypeID())
 	if err != nil {
+		if netErr, ok := err.(net.Error); ok {
+			if netErr.Temporary() {
+				go func() {
+					n.eventCh <- ev
+				}()
+			}
+		}
 		log.Println(err)
+		n.Destroy()
 		return
 	}
 	err = encoder.Encode(ev)
 	if err != nil {
+		if netErr, ok := err.(net.Error); ok {
+			if netErr.Temporary() {
+				go func() {
+					n.eventCh <- ev
+				}()
+			}
+		}
 		log.Println(err)
+		n.Destroy()
 	}
 }
 
 func StartNetworkListener() {
-	ln, err := net.Listen("tcp", port)
+	ln, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -126,7 +152,7 @@ func NewNetworkBackend(address string) *NetworkBackend {
 			close:   make(chan struct{}),
 		},
 	}
-	conn, err := net.Dial("tcp", address+port)
+	conn, err := net.Dial("tcp", net.JoinHostPort(address, port))
 	if err != nil {
 		log.Fatalln(err)
 	}
