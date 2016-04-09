@@ -2,7 +2,6 @@ package main
 
 import (
 	"container/heap"
-	"fmt"
 	"math"
 	"time"
 
@@ -121,25 +120,25 @@ func createUnitType(maxHealth int, movement float64, w, h int32) *unitType {
 				top:    h / -2,
 				bottom: 0,
 				left:   w / -2,
-				right:  w / 2,
+				right:  w/2 - 1,
 			},
 			bottomBox: hitRect{
 				top:    0,
-				bottom: h / 2,
+				bottom: h/2 - 1,
 				left:   w / -2,
-				right:  w / 2,
+				right:  w/2 - 1,
 			},
 			leftBox: hitRect{
 				top:    h / -2,
-				bottom: h / 2,
+				bottom: h/2 - 1,
 				left:   w / -2,
 				right:  0,
 			},
 			rightBox: hitRect{
 				top:    h / -2,
-				bottom: h / 2,
+				bottom: h/2 - 1,
 				left:   0,
-				right:  w / 2,
+				right:  w/2 - 1,
 			},
 		},
 	}
@@ -148,13 +147,13 @@ func createUnitType(maxHealth int, movement float64, w, h int32) *unitType {
 func (u hitRect) boxPosition(x, y int32) hitRect {
 	return hitRect{
 		top:    u.top + y,
-		bottom: u.bottom - y,
-		left:   u.left - x,
+		bottom: u.bottom + y,
+		left:   u.left + x,
 		right:  u.right + x,
 	}
 }
 
-func (u mainRect) collusionBox(x, y int32) mainRect {
+func (u mainRect) collisionBox(x, y int32) mainRect {
 	return mainRect{
 		topBox:    u.topBox.boxPosition(x, y),
 		bottomBox: u.bottomBox.boxPosition(x, y),
@@ -200,50 +199,52 @@ loop:
 
 //has to do with everything about the unit
 func (u *unit) updateUnit() {
-	fmt.Println(u.backAccess.lastLevel.CollideMap[int32(u.y)/u.backAccess.lastLevel.TileHeight][int32(u.x)/u.backAccess.lastLevel.TileWidth])
-
-	curRect := u.typ.hitDetect
-
+	curRect := u.typ.hitDetect.collisionBox(int32(u.x), int32(u.y))
 	newX := u.x + u.xV
-	newY := u.y + u.yV
-
 	if u.xV > 0 {
 		//right
 		currBox := curRect.rightBox
 		currBox.right += int32(u.xV)
-		tileX, _ := currBox.checkRect(u.backAccess.lastLevel.CollideMap, 1, 0, 32, 32)
+		tileX, _ := currBox.checkRect(u.backAccess.lastLevel.CollideMap, 1, 0, u.backAccess.lastLevel.TileWidth, u.backAccess.lastLevel.TileHeight)
 		if tileX != -1 {
-			newX = float64(int32(tileX)*u.backAccess.lastLevel.TileWidth - u.typ.hitDetect.rightBox.right)
+			newX = float64(int32(tileX)*u.backAccess.lastLevel.TileWidth - u.typ.hitDetect.rightBox.right - 1)
+			u.xV = 0
 		}
 	} else {
 		//left
 		currbox := curRect.leftBox
-		currbox.left -= int32(u.xV)
-		tileX, _ := currbox.checkRect(u.backAccess.lastLevel.CollideMap, -1, 0, 32, 32)
-		if tileX != 1 {
-			newX = float64(int32(tileX)*u.backAccess.lastLevel.TileWidth - u.typ.hitDetect.leftBox.left)
+		currbox.left += int32(u.xV)
+		tileX, _ := currbox.checkRect(u.backAccess.lastLevel.CollideMap, -1, 0, u.backAccess.lastLevel.TileWidth, u.backAccess.lastLevel.TileHeight)
+		if tileX != -1 {
+			newX = float64(int32(tileX+1)*u.backAccess.lastLevel.TileWidth - u.typ.hitDetect.leftBox.left)
+			u.xV = 0
 		}
 	}
+
+	curRect = u.typ.hitDetect.collisionBox(int32(newX), int32(u.y))
+	newY := u.y + u.yV
 	if u.yV > 0 {
 		//down
 		currbox := curRect.bottomBox
 		currbox.bottom += int32(u.yV)
-		_, tileY := currbox.checkRect(u.backAccess.lastLevel.CollideMap, 0, 1, 32, 32)
+		_, tileY := currbox.checkRect(u.backAccess.lastLevel.CollideMap, 0, 1, u.backAccess.lastLevel.TileWidth, u.backAccess.lastLevel.TileHeight)
 		if tileY != -1 {
-			newY = float64(int32(tileY)*u.backAccess.lastLevel.TileHeight - u.typ.hitDetect.bottomBox.bottom)
+			newY = float64(int32(tileY)*u.backAccess.lastLevel.TileHeight - u.typ.hitDetect.bottomBox.bottom - 1)
+			u.yV = 0
 		}
 	} else {
 		//up
 		currBox := curRect.topBox
-		currBox.top -= int32(u.yV)
-		_, tileY := currBox.checkRect(u.backAccess.lastLevel.CollideMap, 0, -1, 32, 32)
-		if tileY != 1 {
-			newY = float64(int32(tileY)*u.backAccess.lastLevel.TileHeight - u.typ.hitDetect.topBox.top)
+		currBox.top += int32(u.yV)
+		_, tileY := currBox.checkRect(u.backAccess.lastLevel.CollideMap, 0, -1, u.backAccess.lastLevel.TileWidth, u.backAccess.lastLevel.TileHeight)
+		if tileY != -1 {
+			newY = float64(int32(tileY+1)*u.backAccess.lastLevel.TileHeight - u.typ.hitDetect.topBox.top)
+			u.yV = 0
 		}
 	}
 
-	u.x += newX
-	u.y += newY
+	u.x = newX
+	u.y = newY
 	u.xV += u.xAcl + (-u.xV * 0.8)
 	u.yV += u.yAcl + (-u.yV * 0.8)
 	u.x = math.Max(0, math.Min(800, u.x))
