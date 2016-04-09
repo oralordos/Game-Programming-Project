@@ -12,21 +12,27 @@ type BackEnd struct {
 	lastLevel *events.ChangeLevel
 	players   map[string]int
 	nextID    int
+	inChn     chan events.Event
 }
 
 const frameDelta = time.Second / 30
 
-func backendLoop() {
+func newBackEnd() *BackEnd {
 	b := &BackEnd{
 		nextID:   1,
 		unitInfo: []*unit{},
 		players:  map[string]int{},
+		inChn:    make(chan events.Event),
 	}
-	inChn := make(chan events.Event)
-	events.AddListener(inChn, events.DirSystem, 0)
+	events.AddListener(b.inChn, events.DirSystem, 0)
+	go b.backendLoop()
+	return b
+}
+
+func (b *BackEnd) backendLoop() {
 	for {
 		select {
-		case todo := <-inChn:
+		case todo := <-b.inChn:
 			b.processEvent(todo)
 		}
 	}

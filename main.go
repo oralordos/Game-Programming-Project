@@ -23,7 +23,7 @@ func main() {
 	defer win.Destroy()
 
 	if len(os.Args) == 1 {
-		go backendLoop()
+		newBackEnd()
 	}
 
 	frontend := NewPlayerFrontend(win)
