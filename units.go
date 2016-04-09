@@ -201,8 +201,49 @@ loop:
 //has to do with everything about the unit
 func (u *unit) updateUnit() {
 	fmt.Println(u.backAccess.lastLevel.CollideMap[int32(u.y)/u.backAccess.lastLevel.TileHeight][int32(u.x)/u.backAccess.lastLevel.TileWidth])
-	u.x += u.xV
-	u.y += u.yV
+
+	curRect := u.typ.hitDetect
+
+	newX := u.x + u.xV
+	newY := u.y + u.yV
+
+	if u.xV > 0 {
+		//right
+		currBox := curRect.rightBox
+		currBox.right += int32(u.xV)
+		tileX, _ := currBox.checkRect(u.backAccess.lastLevel.CollideMap, 1, 0, 32, 32)
+		if tileX != -1 {
+			newX = float64(int32(tileX)*u.backAccess.lastLevel.TileWidth - u.typ.hitDetect.rightBox.right)
+		}
+	} else {
+		//left
+		currbox := curRect.leftBox
+		currbox.left -= int32(u.xV)
+		tileX, _ := currbox.checkRect(u.backAccess.lastLevel.CollideMap, -1, 0, 32, 32)
+		if tileX != 1 {
+			newX = float64(int32(tileX)*u.backAccess.lastLevel.TileWidth - u.typ.hitDetect.leftBox.left)
+		}
+	}
+	if u.yV > 0 {
+		//down
+		currbox := curRect.bottomBox
+		currbox.bottom += int32(u.yV)
+		_, tileY := currbox.checkRect(u.backAccess.lastLevel.CollideMap, 0, 1, 32, 32)
+		if tileY != -1 {
+			newY = float64(int32(tileY)*u.backAccess.lastLevel.TileHeight - u.typ.hitDetect.bottomBox.bottom)
+		}
+	} else {
+		//up
+		currBox := curRect.topBox
+		currBox.top -= int32(u.yV)
+		_, tileY := currBox.checkRect(u.backAccess.lastLevel.CollideMap, 0, -1, 32, 32)
+		if tileY != 1 {
+			newY = float64(int32(tileY)*u.backAccess.lastLevel.TileHeight - u.typ.hitDetect.topBox.top)
+		}
+	}
+
+	u.x += newX
+	u.y += newY
 	u.xV += u.xAcl + (-u.xV * 0.8)
 	u.yV += u.yAcl + (-u.yV * 0.8)
 	u.x = math.Max(0, math.Min(800, u.x))
