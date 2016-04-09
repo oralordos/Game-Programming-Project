@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/heap"
 	"fmt"
 	"math"
 	"time"
@@ -39,6 +40,74 @@ type hitRect struct {
 	bottom int32
 	left   int32
 	right  int32
+}
+
+type coord struct {
+	x, y int
+}
+type sortCoord struct {
+	coords     []coord
+	dirX, dirY int
+}
+
+func (s sortCoord) Len() int {
+	return len(s.coords)
+}
+
+func (s sortCoord) Less(i, j int) bool {
+	first := s.coords[i]
+	second := s.coords[j]
+	if s.dirX == 1 {
+		return first.x < second.x
+	} else if s.dirX == -1 {
+		return first.x > second.x
+	} else if s.dirY == 1 {
+		return first.y < second.y
+	}
+	return first.y > second.y
+}
+
+func (s sortCoord) Swap(i, j int) {
+	s.coords[i], s.coords[j] = s.coords[j], s.coords[i]
+}
+
+func (s *sortCoord) Push(x interface{}) {
+	s.coords = append(s.coords, x.(coord))
+}
+
+func (s *sortCoord) Pop() interface{} {
+	old := s.coords
+	n := len(old)
+	x := old[n-1]
+	s.coords = old[:n-1]
+	return x
+}
+
+func (u hitRect) checkRect(collide [][]bool, dirX, dirY int, tH, tW int32) (int, int) {
+	collision := sortCoord{
+		coords: []coord{},
+		dirX:   dirX,
+		dirY:   dirY,
+	}
+
+	leftT := u.left / tW
+	rightT := u.right / tW
+	topT := u.top / tH
+	bottomT := u.bottom / tH
+	for y, row := range collide[topT : bottomT+1] {
+		for x, tile := range row[leftT : rightT+1] {
+			if tile {
+				collision.coords = append(collision.coords, coord{x + int(leftT), y + int(topT)})
+			}
+		}
+	}
+
+	if len(collision.coords) == 0 {
+		return -1, -1
+	}
+	heap.Init(&collision)
+
+	return collision.coords[0].x, collision.coords[0].y
 }
 
 var PlayerT = createUnitType(10, 5, 32, 32)
