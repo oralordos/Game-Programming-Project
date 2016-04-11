@@ -9,6 +9,9 @@ import (
 func Init() error {
 	// This is needed to make sure that we are always running the graphics code in the same OS thread as it is initialized in.
 	runtime.LockOSThread()
+	if runtime.GOMAXPROCS(-1) == 1 {
+		runtime.GOMAXPROCS(2)
+	}
 	return sdl.Init(sdl.INIT_EVERYTHING)
 }
 
