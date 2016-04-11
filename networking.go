@@ -21,8 +21,11 @@ type Network struct {
 
 func (n *Network) readloop() {
 	for {
-		var typ int
-		err := n.decoder.Decode(&typ)
+		var data struct {
+			Type  int
+			Event json.RawMessage
+		}
+		err := n.decoder.Decode(&data)
 		if err != nil {
 			if n, ok := err.(net.Error); ok {
 				if n.Temporary() {
@@ -32,7 +35,7 @@ func (n *Network) readloop() {
 			log.Println(err)
 			break
 		}
-		ev, err := events.DecodeJSON(typ, n.decoder)
+		ev, err := events.DecodeJSON(data.Type, data.Event)
 		if err != nil {
 			if n, ok := err.(net.Error); ok {
 				if n.Temporary() {
@@ -75,8 +78,14 @@ func (n *Network) handleEvent(ev events.Event) {
 }
 
 func (n *Network) sendEvent(ev events.Event) {
+	var data struct {
+		Type  int
+		Event events.Event
+	}
+	data.Type = ev.GetTypeID()
+	data.Event = ev
 	encoder := json.NewEncoder(n.conn)
-	err := encoder.Encode(ev.GetTypeID())
+	err := encoder.Encode(&data)
 	if err != nil {
 		if netErr, ok := err.(net.Error); ok {
 			if netErr.Temporary() {
@@ -88,18 +97,6 @@ func (n *Network) sendEvent(ev events.Event) {
 		log.Println(err)
 		n.Destroy()
 		return
-	}
-	err = encoder.Encode(ev)
-	if err != nil {
-		if netErr, ok := err.(net.Error); ok {
-			if netErr.Temporary() {
-				go func() {
-					n.eventCh <- ev
-				}()
-			}
-		}
-		log.Println(err)
-		n.Destroy()
 	}
 }
 
