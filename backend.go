@@ -98,6 +98,8 @@ func (b *BackEnd) processEvent(ev events.Event) {
 			return
 		}
 		b.createPlayerUnit(id, e.UUID)
+	case *events.LoadLevel:
+		b.loadLevel(e)
 	}
 }
 
@@ -111,4 +113,8 @@ func (b *BackEnd) createPlayerUnit(id int, uuid string) {
 		AttachTo: uuid,
 	}
 	events.SendEvent(&createPlayer)
+}
+
+func (b *BackEnd) loadLevel(e *events.LoadLevel) {
+
 }

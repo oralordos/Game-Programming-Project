@@ -15,6 +15,7 @@ const (
 	TypePlayerJoin
 	TypePlayerLeave
 	TypeSetUUID
+	TypeLoadLevel
 )
 
 func DecodeJSON(typ int, data json.RawMessage) (Event, error) {

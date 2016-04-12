@@ -38,3 +38,20 @@ func (c *ChangeLevel) GetSubValue() int {
 func (c *ChangeLevel) GetTypeID() int {
 	return TypeChangeLevel
 }
+
+type LoadLevel struct {
+	FileName    string
+	noDuplicate `json:"-"`
+}
+
+func (c *LoadLevel) GetDirection() int {
+	return DirSystem
+}
+
+func (c *LoadLevel) GetSubValue() int {
+	return 0
+}
+
+func (c *LoadLevel) GetTypeID() int {
+	return TypeLoadLevel
+}
