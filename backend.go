@@ -83,7 +83,8 @@ func (b *BackEnd) processEvent(ev events.Event) {
 			players[k] = v
 		}
 		newLevel := &events.ChangeLevel{
-			Tilemap:    b.lastLevel.Tilemap,
+			// TODO Change this to copy the contents of Tilemaps
+			Tilemaps:   b.lastLevel.Tilemaps,
 			Images:     b.lastLevel.Images,
 			TileWidth:  b.lastLevel.TileWidth,
 			TileHeight: b.lastLevel.TileHeight,

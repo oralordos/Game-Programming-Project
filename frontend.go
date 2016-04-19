@@ -123,17 +123,20 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 }
 
 func (p *PlayerFrontend) loadLevel(e *events.ChangeLevel) {
-	tiles := [][]graphics.Tile{}
-	for y, row := range e.Images {
-		tiles = append(tiles, []graphics.Tile{})
-		for _, img := range row {
-			var newTile graphics.Tile
-			if img == 0 {
-				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
-			} else {
-				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
+	tiles := [][][]graphics.Tile{}
+	for z, layer := range e.Images {
+		tiles = append(tiles, [][]graphics.Tile{})
+		for y, row := range layer {
+			tiles[z] = append(tiles[z], []graphics.Tile{})
+			for _, img := range row {
+				var newTile graphics.Tile
+				if img == 0 {
+					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
+				} else {
+					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
+				}
+				tiles[z][y] = append(tiles[z][y], newTile)
 			}
-			tiles[y] = append(tiles[y], newTile)
 		}
 	}
 	p.level = graphics.NewTilemap(tiles, e.TileWidth, e.TileHeight)

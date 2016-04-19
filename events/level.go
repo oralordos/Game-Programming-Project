@@ -17,8 +17,12 @@ func (c ReloadLevel) GetTypeID() int {
 }
 
 type ChangeLevel struct {
-	Tilemap               string
-	Images                [][]int
+	Tilemaps []struct {
+		Filename   string
+		TileWidth  int32
+		TileHeight int32
+	}
+	Images                [][][]int
 	TileWidth, TileHeight int32
 	StartX, StartY        float64
 	CollideMap            [][]bool

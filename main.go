@@ -34,17 +34,18 @@ func main() {
 		}
 		events.SendEvent(joinEvent)
 
-		tiles := [][]int{}
+		tiles := [][][]int{}
+		tiles = append(tiles, [][]int{})
 		collide := [][]bool{}
 		for i := 0; i < 15; i++ {
-			tiles = append(tiles, []int{})
+			tiles[0] = append(tiles[0], []int{})
 			collide = append(collide, []bool{})
 			for j := 0; j < 25; j++ {
 				if i == 0 || j == 0 || i == 14 || j == 24 {
-					tiles[i] = append(tiles[i], 1)
+					tiles[0][i] = append(tiles[0][i], 1)
 					collide[i] = append(collide[i], true)
 				} else {
-					tiles[i] = append(tiles[i], 0)
+					tiles[0][i] = append(tiles[0][i], 0)
 					collide[i] = append(collide[i], false)
 				}
 			}

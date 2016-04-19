@@ -22,11 +22,11 @@ func (t *Tile) GetDrawable(x, y int32) Drawable {
 }
 
 type Tilemap struct {
-	level                 [][]Tile
+	level                 [][][]Tile
 	tileWidth, tileHeight int32
 }
 
-func NewTilemap(level [][]Tile, tileWidth, tileHeight int32) *Tilemap {
+func NewTilemap(level [][][]Tile, tileWidth, tileHeight int32) *Tilemap {
 	return &Tilemap{
 		level:      level,
 		tileWidth:  tileWidth,
@@ -36,9 +36,11 @@ func NewTilemap(level [][]Tile, tileWidth, tileHeight int32) *Tilemap {
 
 func (t *Tilemap) GetDrawable() Drawable {
 	draw := CombinedDrawer{}
-	for y, row := range t.level {
-		for x, tile := range row {
-			draw = append(draw, tile.GetDrawable(int32(x)*t.tileWidth, int32(y)*t.tileHeight))
+	for _, layer := range t.level {
+		for y, row := range layer {
+			for x, tile := range row {
+				draw = append(draw, tile.GetDrawable(int32(x)*t.tileWidth, int32(y)*t.tileHeight))
+			}
 		}
 	}
 	return draw
