@@ -1,6 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
@@ -116,5 +120,32 @@ func (b *BackEnd) createPlayerUnit(id int, uuid string) {
 }
 
 func (b *BackEnd) loadLevel(e *events.LoadLevel) {
+	type level struct {
+		Height int32
+		Width  int32
+		Layers []struct {
+			Data       []int32
+			Properties map[string]string
+		}
+		Tilesets []struct {
+			Image      string
+			TileWidth  int32
+			TileHeight int32
+		}
+	}
 
+	file, err := os.Open(e.FileName)
+	if err != nil {
+		log.Printf("failed loading file: %s\n", e.FileName)
+		return
+	}
+	defer file.Close()
+
+	var x level
+	err = json.NewDecoder(file).Decode(&x)
+	if err != nil {
+		log.Printf("failed loading file: %s\n", e.FileName)
+		return
+	}
+	fmt.Println(x)
 }

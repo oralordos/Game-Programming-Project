@@ -63,6 +63,10 @@ func main() {
 		go StartNetworkListener()
 		time.Sleep(10 * time.Millisecond)
 		events.SendEvent(change)
+		loadlevel := events.LoadLevel{
+			FileName: "assets/testTiles.json",
+		}
+		events.SendEvent(&loadlevel)
 	} else {
 		NewNetworkBackend(os.Args[1])
 	}
