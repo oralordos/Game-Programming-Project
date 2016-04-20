@@ -64,3 +64,7 @@ func (g *Window) Update(draw Drawable) error {
 func (g *Window) Present() {
 	g.rend.Present()
 }
+
+func (g *Window) GetSize() (int, int) {
+	return g.win.GetSize()
+}

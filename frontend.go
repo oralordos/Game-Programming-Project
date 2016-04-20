@@ -167,5 +167,15 @@ func (p *PlayerFrontend) getDraw() graphics.Drawable {
 	for _, v := range p.units {
 		draw = append(draw, v.GetDrawable())
 	}
-	return &draw
+	player := p.GetUnit(p.player)
+	if player == nil {
+		return draw
+	}
+	x, y := player.GetPos()
+	w, h := p.window.GetSize()
+	return &graphics.OffsetDrawer{
+		Drawing: draw,
+		OffsetX: int32(w)/2 - int32(x),
+		OffsetY: int32(h)/2 - int32(y),
+	}
 }

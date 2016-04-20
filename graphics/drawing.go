@@ -36,11 +36,11 @@ func (d CombinedDrawer) Draw(r *sdl.Renderer, offsetX, offsetY int32) error {
 }
 
 type OffsetDrawer struct {
-	draw             Drawable
-	offsetX, offsetY int32
+	Drawing          Drawable
+	OffsetX, OffsetY int32
 }
 
 func (d *OffsetDrawer) Draw(r *sdl.Renderer, offsetX, offsetY int32) error {
-	d.draw.Draw(r, offsetX+d.offsetX, offsetY+d.offsetY)
+	d.Drawing.Draw(r, offsetX+d.OffsetX, offsetY+d.OffsetY)
 	return nil
 }

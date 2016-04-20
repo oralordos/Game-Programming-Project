@@ -74,3 +74,7 @@ func (u *Unit) getDraw() Drawable {
 func (u *Unit) Destroy() {
 	close(u.close)
 }
+
+func (u *Unit) GetPos() (float64, float64) {
+	return u.x, u.y
+}
