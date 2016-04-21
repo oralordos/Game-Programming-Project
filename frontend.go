@@ -123,22 +123,34 @@ func (p *PlayerFrontend) processEvent(ev events.Event) {
 }
 
 func (p *PlayerFrontend) loadLevel(e *events.ChangeLevel) {
-	tiles := [][][]graphics.Tile{}
-	for z, layer := range e.Images {
-		tiles = append(tiles, [][]graphics.Tile{})
-		for y, row := range layer {
-			tiles[z] = append(tiles[z], []graphics.Tile{})
-			for _, img := range row {
-				var newTile graphics.Tile
-				if img == 0 {
-					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
-				} else {
-					newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
-				}
-				tiles[z][y] = append(tiles[z][y], newTile)
+	tiles := [][][]graphics.Tile{{}}
+	for y, row := range e.CollideMap {
+		tiles[0] = append(tiles[0], []graphics.Tile{})
+		for _, collide := range row {
+			var newTile graphics.Tile
+			if collide {
+				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
+			} else {
+				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
 			}
+			tiles[0][y] = append(tiles[0][y], newTile)
 		}
 	}
+	// for z, layer := range e.Images {
+	// 	tiles = append(tiles, [][]graphics.Tile{})
+	// 	for y, row := range layer {
+	// 		tiles[z] = append(tiles[z], []graphics.Tile{})
+	// 		for _, img := range row {
+	// 			var newTile graphics.Tile
+	// 			if img == 0 {
+	// 				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
+	// 			} else {
+	// 				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
+	// 			}
+	// 			tiles[z][y] = append(tiles[z][y], newTile)
+	// 		}
+	// 	}
+	// }
 	p.level = graphics.NewTilemap(tiles, e.TileWidth, e.TileHeight)
 	for _, unit := range p.units {
 		unit.Destroy()
