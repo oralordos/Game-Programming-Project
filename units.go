@@ -2,7 +2,6 @@ package main
 
 import (
 	"container/heap"
-	"math"
 	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
@@ -119,24 +118,24 @@ func createUnitType(maxHealth int, movement float64, w, h int32) *unitType {
 			topBox: hitRect{
 				top:    h / -2,
 				bottom: 0,
-				left:   w / -2,
-				right:  w/2 - 1,
+				left:   w/-2 + 2,
+				right:  w/2 - 1 - 2,
 			},
 			bottomBox: hitRect{
 				top:    0,
 				bottom: h/2 - 1,
-				left:   w / -2,
-				right:  w/2 - 1,
+				left:   w/-2 + 2,
+				right:  w/2 - 1 - 2,
 			},
 			leftBox: hitRect{
-				top:    h / -2,
-				bottom: h/2 - 1,
+				top:    h/-2 + 2,
+				bottom: h/2 - 1 - 2,
 				left:   w / -2,
 				right:  0,
 			},
 			rightBox: hitRect{
-				top:    h / -2,
-				bottom: h/2 - 1,
+				top:    h/-2 + 2,
+				bottom: h/2 - 1 - 2,
 				left:   0,
 				right:  w/2 - 1,
 			},
@@ -247,8 +246,6 @@ func (u *unit) updateUnit() {
 	u.y = newY
 	u.xV += u.xAcl + (-u.xV * 0.8)
 	u.yV += u.yAcl + (-u.yV * 0.8)
-	u.x = math.Max(0, math.Min(800, u.x))
-	u.y = math.Max(0, math.Min(600, u.y))
 	e := events.UnitMoved{
 		ID:   u.unitID,
 		NewX: u.x,
