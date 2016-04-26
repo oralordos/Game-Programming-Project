@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
@@ -122,17 +123,22 @@ func (b *BackEnd) createPlayerUnit(id int, uuid string) {
 
 func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 	type level struct {
-		Height int32
-		Width  int32
-		Layers []struct {
-			Data       []int32
+		Height     int32
+		Width      int32
+		Tileheight int32
+		Tilewidth  int32
+		Layers     []struct {
+			Data       []int
 			Properties map[string]string
+			Height     int32
+			Width      int32
 		}
 		Tilesets []struct {
 			Image      string
 			TileWidth  int32
 			TileHeight int32
 		}
+		Properties map[string]string
 	}
 
 	file, err := os.Open(e.FileName)
@@ -148,5 +154,54 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 		log.Printf("failed loading file: %s\n", e.FileName)
 		return
 	}
-	fmt.Println(x)
+
+	//changeLevel struct
+	//load the change
+
+	startX, err := strconv.Atoi(x.Properties["StartX"])
+	startY, err := strconv.Atoi(x.Properties["StartY"])
+	cLevel := events.ChangeLevel{
+		Tilemaps:   make([]events.Tilemap, 0, len(x.Tilesets)),
+		Images:     [][][]int{},
+		TileWidth:  x.Tilewidth,
+		TileHeight: x.Tileheight,
+		StartX:     float64(int32(startX) * x.Tilewidth),
+		StartY:     float64(int32(startY) * x.Tileheight),
+		CollideMap: make([][]bool, x.Height),
+		Units:      []events.CreateUnit{},
+		Players:    b.players,
+	}
+
+	for i := range cLevel.CollideMap {
+		cLevel.CollideMap[i] = make([]bool, x.Width)
+	}
+
+	for _, t := range x.Tilesets {
+		tm := events.Tilemap{
+			Filename:   t.Image,
+			TileWidth:  t.TileWidth,
+			TileHeight: t.TileHeight,
+		}
+		cLevel.Tilemaps = append(cLevel.Tilemaps, tm)
+	}
+
+	for z, layer := range x.Layers {
+		cLevel.Images = append(cLevel.Images, [][]int{})
+		var i int32
+		for i = 0; i < layer.Height; i++ {
+			cLevel.Images[z] = append(cLevel.Images[z], layer.Data[i*layer.Width:(i+1)*layer.Width])
+		}
+		if layer.Properties["collide"] == "true" {
+			for y, row := range cLevel.Images[z] {
+				for x, tile := range row {
+					if tile != 0 {
+						cLevel.CollideMap[y][x] = true
+					}
+				}
+			}
+		}
+	}
+	events.SendEvent(&cLevel)
+	fmt.Println(cLevel.Images)
+	fmt.Println(cLevel.CollideMap)
 }
