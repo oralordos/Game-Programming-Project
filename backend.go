@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -79,10 +78,6 @@ func (b *BackEnd) processEvent(ev events.Event) {
 				H:  32,
 			}
 		}
-		players := make(map[string]int)
-		for k, v := range b.players {
-			players[k] = v
-		}
 		newLevel := &events.ChangeLevel{
 			// TODO Change this to copy the contents of Tilemaps
 			Tilemaps:   b.lastLevel.Tilemaps,
@@ -93,7 +88,7 @@ func (b *BackEnd) processEvent(ev events.Event) {
 			StartY:     b.lastLevel.StartY,
 			CollideMap: b.lastLevel.CollideMap,
 			Units:      units,
-			Players:    players,
+			Players:    b.players,
 		}
 		events.SendEvent(newLevel)
 	case *events.PlayerJoin:
@@ -168,8 +163,23 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 		StartX:     float64(int32(startX) * x.Tilewidth),
 		StartY:     float64(int32(startY) * x.Tileheight),
 		CollideMap: make([][]bool, x.Height),
-		Units:      []events.CreateUnit{},
+		Units:      make([]events.CreateUnit, 0, len(b.players)),
 		Players:    b.players,
+	}
+
+	b.nextID = 1
+	for playerID := range b.players {
+		create := events.CreateUnit{
+			ID:       b.nextID,
+			X:        cLevel.StartX,
+			Y:        cLevel.StartY,
+			W:        32,
+			H:        32,
+			AttachTo: playerID,
+		}
+		cLevel.Players[playerID] = b.nextID
+		cLevel.Units = append(cLevel.Units, create)
+		b.nextID++
 	}
 
 	for i := range cLevel.CollideMap {
@@ -202,6 +212,4 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 		}
 	}
 	events.SendEvent(&cLevel)
-	fmt.Println(cLevel.Images)
-	fmt.Println(cLevel.CollideMap)
 }

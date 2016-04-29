@@ -34,36 +34,9 @@ func main() {
 		}
 		events.SendEvent(joinEvent)
 
-		tiles := [][][]int{}
-		tiles = append(tiles, [][]int{})
-		collide := [][]bool{}
-		for i := 0; i < 15; i++ {
-			tiles[0] = append(tiles[0], []int{})
-			collide = append(collide, []bool{})
-			for j := 0; j < 25; j++ {
-				if i == 0 || j == 0 || i == 14 || j == 24 {
-					tiles[0][i] = append(tiles[0][i], 1)
-					collide[i] = append(collide[i], true)
-				} else {
-					tiles[0][i] = append(tiles[0][i], 0)
-					collide[i] = append(collide[i], false)
-				}
-			}
-		}
-		change := &events.ChangeLevel{
-			Images:     tiles,
-			TileWidth:  32,
-			TileHeight: 32,
-			StartX:     105,
-			StartY:     105,
-			CollideMap: collide,
-			Units:      []events.CreateUnit{},
-			Players:    make(map[string]int),
-		}
-
 		go StartNetworkListener()
 		time.Sleep(10 * time.Millisecond)
-		events.SendEvent(change)
+		// events.SendEvent(change)
 		loadlevel := events.LoadLevel{
 			FileName: "assets/testTiles.json",
 		}
