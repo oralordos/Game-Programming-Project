@@ -46,6 +46,13 @@ func (b *BackEnd) processEvent(ev events.Event) {
 	switch e := ev.(type) {
 	case *events.CreateUnit:
 		b.unitInfo = append(b.unitInfo, NewUnit(e.X, e.Y, PlayerT, e.ID, b))
+	case *events.DestroyUnit:
+		for i, unit := range b.unitInfo {
+			if unit.unitID == e.ID {
+				b.unitInfo = append(b.unitInfo[:i], b.unitInfo[i+1:]...)
+				break
+			}
+		}
 	case *events.ChangeLevel:
 		b.lastLevel = e
 		for _, unit := range b.unitInfo {
@@ -101,6 +108,12 @@ func (b *BackEnd) processEvent(ev events.Event) {
 		b.createPlayerUnit(id, e.UUID)
 	case *events.LoadLevel:
 		b.loadLevel(e)
+	case *events.PlayerLeave:
+		destroy := events.DestroyUnit{
+			ID: b.players[e.UUID],
+		}
+		events.SendEvent(&destroy)
+		delete(b.players, e.UUID)
 	}
 }
 

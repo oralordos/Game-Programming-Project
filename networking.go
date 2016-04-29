@@ -12,11 +12,12 @@ import (
 const port = "10328"
 
 type Network struct {
-	conn    net.Conn
-	decoder *json.Decoder
-	dir     int
-	eventCh chan events.Event
-	close   chan struct{}
+	conn         net.Conn
+	decoder      *json.Decoder
+	dir          int
+	eventCh      chan events.Event
+	close        chan struct{}
+	afterDestroy func()
 }
 
 func (n *Network) readloop() {
@@ -57,9 +58,13 @@ loop:
 	}
 	events.RemoveListener(n.eventCh, n.dir, 0)
 	n.conn.Close()
+	n.afterDestroy()
 }
 
 func (n *Network) Destroy() {
+	defer func() {
+		recover()
+	}()
 	close(n.close)
 }
 
@@ -111,6 +116,13 @@ type NetworkFrontend struct {
 	id string
 }
 
+func (n *NetworkFrontend) sendLeave() {
+	leave := events.PlayerLeave{
+		UUID: n.id,
+	}
+	events.SendEvent(&leave)
+}
+
 func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 	n := NetworkFrontend{
 		Network: Network{
@@ -121,6 +133,7 @@ func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 			close:   make(chan struct{}),
 		},
 	}
+	n.afterDestroy = n.sendLeave
 	id, err := uuid.NewV4()
 	if err != nil {
 		log.Fatalln(err)
@@ -145,12 +158,16 @@ type NetworkBackend struct {
 	Network
 }
 
+func nothing() {
+}
+
 func NewNetworkBackend(address string) *NetworkBackend {
 	n := NetworkBackend{
 		Network: Network{
-			dir:     events.DirSystem,
-			eventCh: make(chan events.Event),
-			close:   make(chan struct{}),
+			dir:          events.DirSystem,
+			eventCh:      make(chan events.Event),
+			close:        make(chan struct{}),
+			afterDestroy: nothing,
 		},
 	}
 	conn, err := net.Dial("tcp", net.JoinHostPort(address, port))
