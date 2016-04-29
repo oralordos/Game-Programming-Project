@@ -87,12 +87,11 @@ func (n *Network) sendEvent(ev events.Event) {
 	encoder := json.NewEncoder(n.conn)
 	err := encoder.Encode(&data)
 	if err != nil {
-		if netErr, ok := err.(net.Error); ok {
-			if netErr.Temporary() {
-				go func() {
-					n.eventCh <- ev
-				}()
-			}
+		if netErr, ok := err.(net.Error); ok && netErr.Temporary() {
+			go func() {
+				n.eventCh <- ev
+			}()
+			return
 		}
 		log.Println(err)
 		n.Destroy()
