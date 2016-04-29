@@ -177,6 +177,7 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 			H:        32,
 			AttachTo: playerID,
 		}
+		b.players[playerID] = b.nextID
 		cLevel.Players[playerID] = b.nextID
 		cLevel.Units = append(cLevel.Units, create)
 		b.nextID++
