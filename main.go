@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/Oralordos/Game-Programming-Project/events"
 	"github.com/Oralordos/Game-Programming-Project/graphics"
@@ -35,8 +34,6 @@ func main() {
 		events.SendEvent(joinEvent)
 
 		go StartNetworkListener()
-		time.Sleep(10 * time.Millisecond)
-		// events.SendEvent(change)
 		loadlevel := events.LoadLevel{
 			FileName: "assets/testTiles.json",
 		}
