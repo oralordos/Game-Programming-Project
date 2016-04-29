@@ -39,11 +39,11 @@ func DecodeJSON(typ int, data json.RawMessage) (Event, error) {
 		ev = new(PlayerLeave)
 	case TypeSetUUID:
 		ev = new(SetUUID)
+	case TypeLoadLevel:
+		ev = new(LoadLevel)
 	default:
 		return nil, fmt.Errorf("Unknown event type: %d\n", typ)
 	}
-	if err := json.Unmarshal(data, ev); err != nil {
-		return nil, err
-	}
-	return ev, nil
+	err := json.Unmarshal(data, ev)
+	return ev, err
 }

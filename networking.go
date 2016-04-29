@@ -27,21 +27,14 @@ func (n *Network) readloop() {
 		}
 		err := n.decoder.Decode(&data)
 		if err != nil {
-			if n, ok := err.(net.Error); ok {
-				if n.Temporary() {
-					continue
-				}
+			if n, ok := err.(net.Error); ok && n.Temporary() {
+				continue
 			}
 			log.Println(err)
 			break
 		}
 		ev, err := events.DecodeJSON(data.Type, data.Event)
 		if err != nil {
-			if n, ok := err.(net.Error); ok {
-				if n.Temporary() {
-					continue
-				}
-			}
 			log.Println(err)
 			break
 		}
