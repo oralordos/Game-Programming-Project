@@ -126,10 +126,12 @@ func (p *PlayerFrontend) loadLevel(e *events.ChangeLevel) {
 	tiles := [][][]graphics.Tile{{}}
 	for y, row := range e.CollideMap {
 		tiles[0] = append(tiles[0], []graphics.Tile{})
-		for _, collide := range row {
+		for x, collide := range row {
 			var newTile graphics.Tile
 			if collide {
 				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 191, 191, 191, 255)
+			} else if e.Pits[y][x] {
+				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 0, 0, 0, 255)
 			} else {
 				newTile = graphics.NewTile(e.TileWidth, e.TileHeight, 127, 127, 127, 255)
 			}

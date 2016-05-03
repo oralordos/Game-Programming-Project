@@ -246,9 +246,11 @@ func (u *unit) updateUnit() {
 	u.y = newY
 	u.xV += u.xAcl + (-u.xV * 0.8)
 	u.yV += u.yAcl + (-u.yV * 0.8)
-	if u.backAccess.lastLevel.Pits[int(u.y)][int(u.x)] {
+	if u.backAccess.lastLevel.Pits[int32(u.y)/u.backAccess.lastLevel.TileHeight][int32(u.x)/u.backAccess.lastLevel.TileWidth] {
 		u.x = u.backAccess.lastLevel.StartX
 		u.y = u.backAccess.lastLevel.StartY
+		u.xV = 0
+		u.yV = 0
 	}
 	e := events.UnitMoved{
 		ID:   u.unitID,

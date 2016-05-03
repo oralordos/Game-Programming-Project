@@ -175,8 +175,8 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 		Images:     [][][]int{},
 		TileWidth:  x.Tilewidth,
 		TileHeight: x.Tileheight,
-		StartX:     float64(int32(startX) * x.Tilewidth),
-		StartY:     float64(int32(startY) * x.Tileheight),
+		StartX:     float64(int32(startX)*x.Tilewidth + int32(x.Tilewidth*.5)),
+		StartY:     float64(int32(startY)*x.Tileheight + int32(x.Tileheight*.5)),
 		CollideMap: make([][]bool, x.Height),
 		Units:      make([]events.CreateUnit, 0, len(b.players)),
 		Players:    map[string]int{},
@@ -224,7 +224,7 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 				for _, tileset := range x.Tilesets {
 					for k, v := range tileset.Tileproperties {
 						if v["Pit"] == "True" {
-							if strconv.Itoa(tile) == k {
+							if strconv.Itoa(tile-1) == k {
 								cLevel.Pits[yC][xC] = true
 							}
 						}
