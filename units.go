@@ -9,7 +9,6 @@ import (
 
 type unit struct {
 	unitID     int
-	unitHealth int
 	x, y       float64
 	xV, yV     float64
 	xAcl, yAcl float64
@@ -21,7 +20,6 @@ type unit struct {
 
 type unitType struct {
 	//basic stats go here
-	maxHealth int
 	movement  float64
 	hitDetect mainRect
 }
@@ -108,12 +106,11 @@ func (u hitRect) checkRect(collide [][]bool, dirX, dirY int, tH, tW int32) (int,
 	return collision.coords[0].x, collision.coords[0].y
 }
 
-var PlayerT = createUnitType(10, 5, 32, 32)
+var PlayerT = createUnitType(5, 32, 32)
 
-func createUnitType(maxHealth int, movement float64, w, h int32) *unitType {
+func createUnitType(movement float64, w, h int32) *unitType {
 	return &unitType{
-		maxHealth: maxHealth,
-		movement:  movement,
+		movement: movement,
 		hitDetect: mainRect{
 			topBox: hitRect{
 				top:    h / -2,
@@ -164,7 +161,6 @@ func (u mainRect) collisionBox(x, y int32) mainRect {
 func NewUnit(x, y float64, typ *unitType, id int, b *BackEnd) *unit {
 	u := &unit{
 		id,
-		typ.maxHealth,
 		x, y,
 		0, 0, 0, 0,
 		typ,

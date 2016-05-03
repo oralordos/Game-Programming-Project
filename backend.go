@@ -19,7 +19,7 @@ type BackEnd struct {
 	inChn     chan events.Event
 }
 
-const frameDelta = time.Second / 30
+const frameDelta = time.Second / 60
 
 func newBackEnd() *BackEnd {
 	b := &BackEnd{
