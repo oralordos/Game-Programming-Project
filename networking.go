@@ -149,8 +149,8 @@ func NewNetworkFrontend(conn net.Conn) *NetworkFrontend {
 	joinEvent := &events.PlayerJoin{
 		UUID: n.id,
 	}
-	events.SendEvent(joinEvent)
 	events.SendEvent(events.ReloadLevel{})
+	events.SendEvent(joinEvent)
 	return &n
 }
 
