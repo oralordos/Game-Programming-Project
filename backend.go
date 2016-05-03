@@ -142,9 +142,10 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 			Width      int32
 		}
 		Tilesets []struct {
-			Image      string
-			TileWidth  int32
-			TileHeight int32
+			Image          string
+			Tilewidth      int32
+			Tileheight     int32
+			Tileproperties map[string]map[string]string
 		}
 		Properties map[string]string
 	}
@@ -178,6 +179,7 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 		CollideMap: make([][]bool, x.Height),
 		Units:      make([]events.CreateUnit, 0, len(b.players)),
 		Players:    b.players,
+		Pits:       make([][]bool, x.Height),
 	}
 
 	b.nextID = 1
@@ -198,13 +200,14 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 
 	for i := range cLevel.CollideMap {
 		cLevel.CollideMap[i] = make([]bool, x.Width)
+		cLevel.Pits[i] = make([]bool, x.Width)
 	}
 
 	for _, t := range x.Tilesets {
 		tm := events.Tilemap{
 			Filename:   t.Image,
-			TileWidth:  t.TileWidth,
-			TileHeight: t.TileHeight,
+			TileWidth:  t.Tilewidth,
+			TileHeight: t.Tileheight,
 		}
 		cLevel.Tilemaps = append(cLevel.Tilemaps, tm)
 	}
@@ -215,11 +218,20 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 		for i = 0; i < layer.Height; i++ {
 			cLevel.Images[z] = append(cLevel.Images[z], layer.Data[i*layer.Width:(i+1)*layer.Width])
 		}
-		if layer.Properties["collide"] == "true" {
-			for y, row := range cLevel.Images[z] {
-				for x, tile := range row {
+		for yC, row := range cLevel.Images[z] {
+			for xC, tile := range row {
+				for _, tileset := range x.Tilesets {
+					for k, v := range tileset.Tileproperties {
+						if v["Pit"] == "True" {
+							if strconv.Itoa(tile) == k {
+								cLevel.Pits[yC][xC] = true
+							}
+						}
+					}
+				}
+				if layer.Properties["collide"] == "true" {
 					if tile != 0 {
-						cLevel.CollideMap[y][x] = true
+						cLevel.CollideMap[yC][xC] = true
 					}
 				}
 			}

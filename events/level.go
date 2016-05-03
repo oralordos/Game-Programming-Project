@@ -31,6 +31,7 @@ type ChangeLevel struct {
 	Units                 []CreateUnit
 	Players               map[string]int
 	duplicateOnce         `json:"-"`
+	Pits                  [][]bool
 }
 
 func (c *ChangeLevel) GetDirection() int {
