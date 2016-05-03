@@ -175,21 +175,28 @@ func (p *PlayerFrontend) GetUnit(id int) *graphics.Unit {
 
 func (p *PlayerFrontend) getDraw() graphics.Drawable {
 	draw := make(graphics.CombinedDrawer, 0, len(p.units)+1)
+	var x, y float64
+	var w, h int
+	var offsetX, offsetY int32
+	player := p.GetUnit(p.player)
+	if player != nil {
+		x, y = player.GetPos()
+		w, h = p.window.GetSize()
+		offsetX = int32(w)/2 - int32(x)
+		offsetY = int32(h)/2 - int32(y)
+	}
 	if p.level != nil {
-		draw = append(draw, p.level.GetDrawable())
+		draw = append(draw, p.level.GetDrawable(offsetX, offsetY, int32(w), int32(h)))
 	}
 	for _, v := range p.units {
 		draw = append(draw, v.GetDrawable())
 	}
-	player := p.GetUnit(p.player)
 	if player == nil {
 		return draw
 	}
-	x, y := player.GetPos()
-	w, h := p.window.GetSize()
 	return &graphics.OffsetDrawer{
 		Drawing: draw,
-		OffsetX: int32(w)/2 - int32(x),
-		OffsetY: int32(h)/2 - int32(y),
+		OffsetX: offsetX,
+		OffsetY: offsetY,
 	}
 }
