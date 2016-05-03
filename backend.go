@@ -94,6 +94,7 @@ func (b *BackEnd) processEvent(ev events.Event) {
 			StartX:     b.lastLevel.StartX,
 			StartY:     b.lastLevel.StartY,
 			CollideMap: b.lastLevel.CollideMap,
+			Pits:       b.lastLevel.Pits,
 			Units:      units,
 			Players:    b.players,
 		}
@@ -178,7 +179,7 @@ func (b *BackEnd) loadLevel(e *events.LoadLevel) {
 		StartY:     float64(int32(startY) * x.Tileheight),
 		CollideMap: make([][]bool, x.Height),
 		Units:      make([]events.CreateUnit, 0, len(b.players)),
-		Players:    b.players,
+		Players:    map[string]int{},
 		Pits:       make([][]bool, x.Height),
 	}
 
